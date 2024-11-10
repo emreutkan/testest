@@ -1,79 +1,54 @@
-import React, {useState} from "react";
-import {Alert, Keyboard, TouchableWithoutFeedback, View} from "react-native";
+import React from "react";
+import { Alert, Keyboard, TouchableWithoutFeedback, View } from "react-native";
 import LoginButton from "@/components/LoginScreenComponents/loginButton";
 import { scaleFont } from "@/components/utils/ResponsiveFont";
 import EmailLoginField from "@/components/LoginScreenComponents/emailInput";
 import PhoneInput from "@/components/LoginScreenComponents/PhoneInput";
 import { useRouter } from 'expo-router';
 import NameSurnameField from "@/components/LoginScreenComponents/NameSurnameInputField";
+import { UserModel } from "@/models/UserModel";
 
 const RegisterScreen: React.FC = () => {
-    const [isCodeSent, setIsCodeSent] = useState<boolean>(false);
     const router = useRouter();
-    const user =
+    const user = UserModel.getInstance(); // Use the singleton instance here
 
     const handleRegister = (): void => {
-
-        const isValidPhone = (phone: string): boolean => {
-            const phoneRegex = /^[0-9]{10,15}$/;
-            return phoneRegex.test(phone);
-        };
-
-        const handlePhoneSubmit = (): void => {
-            if (phoneNumber.trim() === '') {
-                Alert.alert('Error', 'Phone number cannot be empty.');
-                return;
-            }
-            if (!isValidPhone(phoneNumber)) {
-                Alert.alert('Error', 'Please enter a valid phone number.');
-                return;
-            }
-            Alert.alert('Code Sent', 'A verification code was sent to your phone.');
-            setIsCodeSent(true);
-            // navigation.navigate('Code', { input: phoneNumber });
-        };
-
-        const handleEmailSubmit = () => {
-            // Implement email submit logic here
-        };    };
+        // Implement registration logic using `user` instance
+    };
 
     return (
-    <>
+        <>
+            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                <>
+                    <View style={styles.container}>
+                        <View style={styles.inputArea}>
+                            <NameSurnameField />
+                        </View>
+                        <View style={styles.inputArea}>
+                            <PhoneInput user={user} />
+                        </View>
+                        <View style={styles.inputArea}>
+                            <EmailLoginField />
+                        </View>
 
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-       <>
-       <View style={styles.container}>
-           <View style={styles.inputArea}>
-               <NameSurnameField></NameSurnameField>
-           </View>
-        <View style={styles.inputArea}>
-            <PhoneInput
-                user={user}
-            />
-        </View>
-        <View style={styles.inputArea}>
-            <EmailLoginField />
-        </View>
-
-        <View style={styles.buttonArea}>
-            <View style={styles.backButton}>
-                <LoginButton
-                onPress={() => router.back()}
-                title = '<'/></View>
-            <View style={styles.SignupButton}>
-                <LoginButton
-                    onPress={() => handleRegister}
-                    title = 'Sign up'
-                /></View>
-        </View>
-
-
-            </View>
-       </>
-
-        </TouchableWithoutFeedback>
+                        <View style={styles.buttonArea}>
+                            <View style={styles.backButton}>
+                                <LoginButton
+                                    onPress={() => router.back()}
+                                    title='<'
+                                />
+                            </View>
+                            <View style={styles.SignupButton}>
+                                <LoginButton
+                                    onPress={handleRegister} // Correct function call syntax
+                                    title='Sign up'
+                                />
+                            </View>
+                        </View>
+                    </View>
+                </>
+            </TouchableWithoutFeedback>
         </>
-
     );
 };
 
@@ -82,11 +57,9 @@ const styles = {
         flex: 1,
         paddingTop: scaleFont(35),
         paddingHorizontal: scaleFont(35),
-
-
     },
     inputArea: {
-        marginBottom: scaleFont(15)
+        marginBottom: scaleFont(15),
     },
     buttonArea: {
         marginTop: scaleFont(35),
@@ -94,23 +67,20 @@ const styles = {
         justifyContent: "space-between",
         flexDirection: 'row',
     },
-    backButton:{
+    backButton: {
         flex: 1,
         marginBottom: scaleFont(10),
-
     },
-    SignupButton:{
+    SignupButton: {
         flex: 4,
         marginLeft: scaleFont(10),
         marginBottom: scaleFont(10),
-
     },
     registerContainer: {
         flex: 1,
         flexDirection: 'row',
-        justifyContent: 'space-between', // Align items to the start
+        justifyContent: 'space-between',
         marginHorizontal: 15,
-
     },
     iconButtonContainer: {
         width: '20%',

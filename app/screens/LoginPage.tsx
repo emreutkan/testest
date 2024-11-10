@@ -8,18 +8,15 @@ import { scaleFont } from '@/components/utils/ResponsiveFont';
 import PhoneInput from '@/components/LoginScreenComponents/PhoneInput';
 import { GoogleSignInButton, EmailSignInButton, PhoneSignInButton } from '@/components/LoginScreenComponents/loginButtons';
 import { UserModel } from '@/models/UserModel';
-import phoneInput from "@/components/LoginScreenComponents/PhoneInput";
 
 const LoginPage: React.FC = () => {
     const router = useRouter();
-    const [user, setUser] = useState<UserModel>(new UserModel());
+    const user = UserModel.getInstance(); // Use the singleton instance here
 
     const [phoneLogin, setPhoneLogin] = useState<boolean>(true);
 
     const handlePhoneChange = (text: string) => {
-        const updatedUser = new UserModel(text, user.getEmail());
-        updatedUser.setPhoneNumber(text);
-        setUser(updatedUser);
+        user.setPhoneNumber(text); // Directly update the singleton instance
     };
 
     const handlePhoneSubmit = (): void => {
@@ -49,7 +46,6 @@ const LoginPage: React.FC = () => {
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View style={styles.bottomContainer}>
-                <View style={{ marginHorizontal: scaleFont(15) }}>
                     <Text style={styles.welcomeText}>Last Call,</Text>
                     <Text style={styles.welcomeText2}>Tasty Deals Await!</Text>
 
@@ -61,7 +57,6 @@ const LoginPage: React.FC = () => {
                         <EmailLoginField />
                     )}
 
-                    {isCodeSent && <Text style={styles.message}>Check your phone for the code.</Text>}
 
                     <View style={{ marginTop: scaleFont(10), marginBottom: scaleFont(50) }}>
                         <LoginButton onPress={handleLoginButton} />
@@ -87,7 +82,6 @@ const LoginPage: React.FC = () => {
                         </TouchableOpacity>
                     )}
                 </View>
-            </View>
         </TouchableWithoutFeedback>
     );
 };

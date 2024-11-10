@@ -3,16 +3,30 @@ import { View, TextInput, TouchableOpacity, Text, Modal, StyleSheet, Platform, D
 import { Picker } from '@react-native-picker/picker';
 import { countryCodes } from '@/components/constants/countryCodes';
 import { scaleFont } from '@/components/utils/ResponsiveFont';
+import { UserModel } from "@/models/UserModel";
 
-const PhoneInput = ({ user }) => {
+const PhoneInput = () => {
+    const user = UserModel.getInstance();
+
     const [tempCode, setTempCode] = useState(user.getSelectedCode());
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState(user.getPhoneNumber() || '');
+    const [isTyping, setIsTyping] = useState(false);
 
-    const handleChangeText = (text: String) => {
-        setPhoneNumber(text); // Update local state immediately
-        user.setPhoneNumber(text); // Update UserModel as needed
+    const handleChangeText = (text) => {
+        if (text.length <= 9) {
+            setPhoneNumber(text); // Update local state immediately
+            user.setPhoneNumber(text); // Update UserModel as needed
+        }
+        setIsTyping(text.length > 0);
     };
+
+    const handleClearText = () => {
+        setPhoneNumber('');
+        user.setPhoneNumber('');
+        setIsTyping(false);
+    };
+
     const handleConfirmSelection = () => {
         user.setSelectedCode(tempCode); // Update code in UserModel
         setIsPickerVisible(false);
@@ -37,17 +51,24 @@ const PhoneInput = ({ user }) => {
     );
 
     return (
-        <View style={styles.inputContainer}>
+        <View style={[
+            styles.inputContainer,
+            isTyping && { borderColor: 'gray' } // Change border color when typing
+        ]}>
             {renderCountryCodeSelector()}
             <TextInput
                 style={styles.phoneInput}
                 placeholder="Phone number"
-                onChangeText={(text) => {
-                    handleChangeText(text); // Update phone number in UserModel
-                }}
+                onChangeText={handleChangeText}
                 value={phoneNumber}
                 keyboardType="phone-pad"
+                maxLength={9} // Enforces maximum of 9 characters
             />
+            {isTyping && (
+                <TouchableOpacity onPress={handleClearText} style={styles.clearButton}>
+                    <Text style={styles.clearButtonText}>X</Text>
+                </TouchableOpacity>
+            )}
 
             {isPickerVisible && (
                 <Modal visible={isPickerVisible} transparent animationType="slide">
@@ -62,7 +83,6 @@ const PhoneInput = ({ user }) => {
                             </TouchableOpacity>
                         </View>
                     </View>
-
                 </Modal>
             )}
         </View>
@@ -119,28 +139,31 @@ const styles = StyleSheet.create({
     },
     countryCodeContainer: {
         paddingRight: scaleFont(10),
-        padding: scaleFont(20),
-        borderWidth: 1,
-        borderRadius: 15,
-        textAlignVertical: 'center', // Centers the text within the padding
-        position: 'absolute',
-        backgroundColor: 'transparent'
-
+        paddingVertical: scaleFont(10),
+        backgroundColor: 'transparent',
     },
     countryCodeText: {
         fontSize: scaleFont(16),
         color: '#333',
-        // borderWidth: 1
-
     },
     phoneInput: {
         flex: 1,
         fontSize: scaleFont(16),
         color: '#333',
-        fontFamily: 'Poppins-Regular',
-        // marginLeft: scaleFont(10), // Adds space between code and input
-        // borderWidth: 1
-
+        // borderWidth: 1,
+        textAlignVertical: 'center',
+        fontFamily: Platform.OS === 'android' ? 'Poppins' : 'Poppins-Regular',
+        paddingVertical: scaleFont(10),
+    },
+    clearButton: {
+        paddingHorizontal: scaleFont(10),
+        paddingVertical: scaleFont(5),
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    clearButtonText: {
+        color: '#999',
+        fontSize: scaleFont(16),
     },
 });
 

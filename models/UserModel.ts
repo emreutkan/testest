@@ -5,10 +5,20 @@ export class UserModel {
     private selectedCode: string;
     private email: string;
 
-    constructor(phoneNumber: string = '', selectedCode: string = '+90', email: string = '') {
+    private static instance: UserModel;
+
+    private constructor(phoneNumber: string = '', selectedCode: string = '+90', email: string = '') {
         this.phoneNumber = phoneNumber;
         this.selectedCode = selectedCode;
         this.email = email;
+    }
+
+    // Static method to get the singleton instance
+    public static getInstance(): UserModel {
+        if (!UserModel.instance) {
+            UserModel.instance = new UserModel();
+        }
+        return UserModel.instance;
     }
 
     // Getter and Setter for phone number
