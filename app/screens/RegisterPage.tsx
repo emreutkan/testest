@@ -8,15 +8,9 @@ import { useRouter } from 'expo-router';
 import NameSurnameField from "@/components/LoginScreenComponents/NameSurnameInputField";
 
 const RegisterScreen: React.FC = () => {
-    const [selectedCode, setSelectedCode] = useState<string>('+90');
-    const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [isCodeSent, setIsCodeSent] = useState<boolean>(false);
-    const [phoneLogin, setPhoneLogin] = useState<boolean>(true);
-    const handlePhoneChange = (text: string) => {
-        const sanitizedText = text.replace(/[^0-9]/g, '').slice(0, 10);
-        setPhoneNumber(sanitizedText);
-    };
     const router = useRouter();
+    const user =
 
     const handleRegister = (): void => {
 
@@ -54,10 +48,7 @@ const RegisterScreen: React.FC = () => {
            </View>
         <View style={styles.inputArea}>
             <PhoneInput
-                selectedCode={selectedCode}
-                onCodeChange={setSelectedCode}
-                phoneNumber={phoneNumber}
-                onPhoneChange={handlePhoneChange}
+                user={user}
             />
         </View>
         <View style={styles.inputArea}>
