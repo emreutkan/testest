@@ -11,6 +11,8 @@ Welcome! This guide will help you set up and run the React Native Expo app. Don‚
 2. [Clone the Git Repository](#2-clone-the-git-repository)
 3. [Install Project Dependencies](#3-install-project-dependencies)
 4. [Start the Expo Application](#4-start-the-expo-application)
+    - [a. Run in Web Browser](#a-run-in-web-browser)
+    - [b. Run on Android Emulator (Optional)](#b-run-on-android-emulator-optional)
 5. [View the App on Your Phone (Optional)](#5-view-the-app-on-your-phone-optional)
 6. [üîß Troubleshooting Tips](#6-troubleshooting-tips)
 7. [‚ùì Need Help?](#7-need-help)
@@ -101,6 +103,8 @@ Welcome! This guide will help you set up and run the React Native Expo app. Don‚
 
 ## 4. Start the Expo Application
 
+### a. Run in Web Browser
+
 1. **Run Expo:**
    - In the terminal, type the following command and press **Enter**:
      ```bash
@@ -108,8 +112,33 @@ Welcome! This guide will help you set up and run the React Native Expo app. Don‚
      ```
    - This will start the Expo development server.
 
-2. **View the QR Code:**
-   - After running the above command, a QR code will appear in the terminal or a new browser window will open with the Expo Dev Tools.
+2. **Open in Web Browser:**
+   - After the server starts, press the **`w`** key in the terminal.
+   - This will open the app in your default web browser.
+
+3. **Emulate iPhone 12 Pro:**
+   - In the web browser, press **F12** to open Developer Tools.
+   - Locate the **Device Toolbar** icon (usually looks like a phone/tablet) or press `Ctrl+Shift+M` (Windows) / `Cmd+Shift+M` (Mac).
+   - From the device list, select **iPhone 12 Pro** to emulate the device dimensions.
+
+### b. Run on Android Emulator (Optional)
+
+*If you prefer to run the app on an Android emulator, follow these steps. Note that setting up Android Studio and environment variables requires additional steps and tutorials, which are beyond the scope of this guide.*
+
+1. **Install Android Studio:**
+   - Download from the [Android Studio website](https://developer.android.com/studio).
+   - Follow the installation instructions provided there.
+
+2. **Set Up Android Emulator:**
+   - Open Android Studio.
+   - Use the **AVD Manager** to create and start an Android Virtual Device.
+
+3. **Run the App on Emulator:**
+   - With the emulator running, return to your terminal.
+   - Ensure the Expo server is running (`npx expo start`).
+   - Press **`a`** in the terminal to launch the app on the Android emulator.
+
+   *For detailed instructions on setting up Android Studio and configuring environment variables, please refer to online tutorials or official documentation.*
 
 ---
 
@@ -140,13 +169,16 @@ Welcome! This guide will help you set up and run the React Native Expo app. Don‚
   - You should see version numbers displayed.
 
 - **Check Internet Connection:**
-  - A stable internet connection is required to download dependencies and for Expo to communicate with your phone.
+  - A stable internet connection is required to download dependencies and for Expo to communicate with your phone or emulator.
 
 - **Firewall and Antivirus:**
   - Sometimes, firewall or antivirus settings can block connections. Ensure that they allow Node.js and Git to operate.
 
 - **Restart if Needed:**
   - If you encounter issues, try restarting WebStorm and your terminal, then repeat the steps.
+
+- **Running on Android Emulator Issues:**
+  - If you choose to use an Android emulator and face issues, refer to Android Studio's official documentation or online tutorials for setup and troubleshooting.
 
 ---
 
