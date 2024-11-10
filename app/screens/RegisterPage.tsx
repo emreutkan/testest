@@ -1,10 +1,11 @@
 import React, {useState} from "react";
 import {Alert, Keyboard, TouchableWithoutFeedback, View} from "react-native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import LoginButton from "@/components/LoginScreenComponents/loginButton";
 import { scaleFont } from "@/components/utils/ResponsiveFont";
 import EmailLoginField from "@/components/LoginScreenComponents/emailInput";
 import PhoneInput from "@/components/LoginScreenComponents/PhoneInput";
+import { useRouter } from 'expo-router';
+import NameSurnameField from "@/components/LoginScreenComponents/NameSurnameInputField";
 
 const RegisterScreen: React.FC = () => {
     const [selectedCode, setSelectedCode] = useState<string>('+90');
@@ -15,6 +16,8 @@ const RegisterScreen: React.FC = () => {
         const sanitizedText = text.replace(/[^0-9]/g, '').slice(0, 10);
         setPhoneNumber(sanitizedText);
     };
+    const router = useRouter();
+
     const handleRegister = (): void => {
 
         const isValidPhone = (phone: string): boolean => {
@@ -42,18 +45,40 @@ const RegisterScreen: React.FC = () => {
 
     return (
     <>
-    
+
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={{paddingTop: scaleFont(35)}}>
-        <PhoneInput
+       <>
+       <View style={styles.container}>
+           <View style={styles.inputArea}>
+               <NameSurnameField></NameSurnameField>
+           </View>
+        <View style={styles.inputArea}>
+            <PhoneInput
                 selectedCode={selectedCode}
                 onCodeChange={setSelectedCode}
                 phoneNumber={phoneNumber}
                 onPhoneChange={handlePhoneChange}
             />
+        </View>
+        <View style={styles.inputArea}>
             <EmailLoginField />
         </View>
 
+        <View style={styles.buttonArea}>
+            <View style={styles.backButton}>
+                <LoginButton
+                onPress={() => router.back()}
+                title = '<'/></View>
+            <View style={styles.SignupButton}>
+                <LoginButton
+                    onPress={() => handleRegister}
+                    title = 'Sign up'
+                /></View>
+        </View>
+
+
+            </View>
+       </>
 
         </TouchableWithoutFeedback>
         </>
@@ -62,6 +87,33 @@ const RegisterScreen: React.FC = () => {
 };
 
 const styles = {
+    container: {
+        flex: 1,
+        paddingTop: scaleFont(35),
+        paddingHorizontal: scaleFont(35),
+
+
+    },
+    inputArea: {
+        marginBottom: scaleFont(15)
+    },
+    buttonArea: {
+        marginTop: scaleFont(35),
+        padding: scaleFont(0),
+        justifyContent: "space-between",
+        flexDirection: 'row',
+    },
+    backButton:{
+        flex: 1,
+        marginBottom: scaleFont(10),
+
+    },
+    SignupButton:{
+        flex: 4,
+        marginLeft: scaleFont(10),
+        marginBottom: scaleFont(10),
+
+    },
     registerContainer: {
         flex: 1,
         flexDirection: 'row',

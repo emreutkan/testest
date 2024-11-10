@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, TextInput, StyleSheet, View, Keyboard } from 'react-native';
-
+import { scaleFont } from '../utils/ResponsiveFont';
 const EmailLoginField: React.FC = () => {
     const [email, setEmail] = useState<string>('');
 
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         backgroundColor: '#fff',
         width: '100%',
-        height: '10%',
+        height: scaleFont(50)
     },
 
     buttonText: {

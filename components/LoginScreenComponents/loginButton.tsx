@@ -7,6 +7,8 @@ interface LoginButtonProps {
   onPress: () => void;
     title?: string;
     children?: React.ReactNode; // in case if you add something inside later  
+    style?: ViewStyle; // Add this line
+
 }
 
 const LoginButton: React.FC<LoginButtonProps> = ({
