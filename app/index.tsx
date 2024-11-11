@@ -6,7 +6,6 @@ const Index = () => {
 
   useEffect(() => {
     const navigateToLogin = async () => {
-      // Small delay to allow mounting
       await new Promise(resolve => setTimeout(resolve, 100));
       router.push('/screens/LoginPage');
     };
@@ -14,7 +13,7 @@ const Index = () => {
     navigateToLogin();
   }, [router]);
 
-  return null; // Optionally render a loading state
+  return null;
 };
 
 export default Index;

@@ -1,5 +1,5 @@
-import { View, Text, TouchableWithoutFeedback, TouchableOpacity, StyleSheet, Alert, Keyboard } from 'react-native';
 import React, { useState } from 'react';
+import { View, Text, TouchableWithoutFeedback, TouchableOpacity, StyleSheet, Alert, Keyboard } from 'react-native';
 import LoginButton from '@/components/LoginScreenComponents/loginButton';
 import { useRouter } from 'expo-router';
 import AppleOTP from "@/components/LoginScreenComponents/AppleOTPLogin";
@@ -8,15 +8,18 @@ import { scaleFont } from '@/components/utils/ResponsiveFont';
 import PhoneInput from '@/components/LoginScreenComponents/PhoneInput';
 import { GoogleSignInButton, EmailSignInButton, PhoneSignInButton } from '@/components/LoginScreenComponents/loginButtons';
 import { UserModel } from '@/models/UserModel';
+import { useDispatch } from 'react-redux';
+import { setUserDetails, setLocation } from '@/slices/userSlice';
 
 const LoginPage: React.FC = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
     const user = UserModel.getInstance(); // Use the singleton instance here
 
     const [phoneLogin, setPhoneLogin] = useState<boolean>(true);
 
     const handlePhoneChange = (text: string) => {
-        user.setPhoneNumber(text); // Directly update the singleton instance
+        user.setPhoneNumber(text);
     };
 
     const handlePhoneSubmit = (): void => {
@@ -51,35 +54,53 @@ const LoginPage: React.FC = () => {
                 selectedCode,
             };
 
-            // Send data to backend
             fetch('http://192.168.1.3:3000/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(loginData),
+            }) .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
             })
-                .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        Alert.alert('Success', 'Login successful!');
-                        router.push('/NextScreen');
+                    console.log('API Response:', data);
+                    if (data.success && data.userData) {
+                        user.setName(data.userData.name);
+                        user.setSurname(data.userData.surname);
+                        user.setEmail(data.userData.email);
+
+                        dispatch(setUserDetails({
+                            name: data.userData.name,
+                            surname: data.userData.surname,
+                            email: data.userData.email,
+                            phoneNumber: data.userData.phoneNumber,
+                        }));
+
+                        if (data.userData.location) {
+                            dispatch(setLocation(data.userData.location));
+                        }
+                            router.push('./VerificationPage');
+                            Alert.alert('Success', 'Login successful!');
                     } else {
-                        Alert.alert('Error', data.message || 'Login failed.');
+                        Alert.alert('Error', 'Login failed.');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     Alert.alert('Error', 'An error occurred during login.');
                 });
+
         } else {
-            // Handle email login
             handleEmailSubmit();
         }
     };
 
     function handleEmailSubmit(): void {
-        throw new Error('Function not implemented.');
+        Alert.alert('Info', 'Email login is not yet implemented.');
     }
 
     return (
@@ -89,9 +110,7 @@ const LoginPage: React.FC = () => {
                 <Text style={styles.welcomeText2}>Tasty Deals Await!</Text>
 
                 {phoneLogin ? (
-                    <PhoneInput
-                        user={user}
-                    />
+                    <PhoneInput user={user} onPhoneChange={handlePhoneChange} />
                 ) : (
                     <EmailLoginField />
                 )}
@@ -106,7 +125,6 @@ const LoginPage: React.FC = () => {
                 </View>
 
                 <View style={styles.registerContainer}>
-
                     <View style={{ marginVertical: scaleFont(20), alignItems: 'center', flexDirection: 'row' }}>
                         <View style={{ flex: 1, height: 1, backgroundColor: '#ccc' }} />
                         <Text style={{ marginHorizontal: scaleFont(10), fontSize: scaleFont(16), color: '#666' }}>or with</Text>
