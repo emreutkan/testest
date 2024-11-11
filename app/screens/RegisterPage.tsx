@@ -13,7 +13,53 @@ const RegisterScreen: React.FC = () => {
     const user = UserModel.getInstance(); // Use the singleton instance here
 
     const handleRegister = (): void => {
-        // Implement registration logic using `user` instance
+        const user = UserModel.getInstance();
+        const userData = {
+            name: user.getName(),
+            surname: user.getSurname(),
+            phoneNumber: user.getPhoneNumber(),
+            selectedCode: user.getSelectedCode(),
+            email: user.getEmail(),
+        };
+
+        // Validate data before sending
+        if (!userData.name || !userData.surname || !userData.phoneNumber || !userData.email) {
+            Alert.alert('Error', 'Please fill in all the required fields.');
+            return;
+        }
+
+        if (!user.isValidEmail()) {
+            Alert.alert('Error', 'Please enter a valid email address.');
+            return;
+        }
+
+        if (!user.isValidPhone()) {
+            Alert.alert('Error', 'Please enter a valid phone number.');
+            return;
+        }
+
+        // Send data to backend as JSON
+        fetch('http://192.168.1.3:3000/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Alert.alert('Success', 'Registration successful!');
+                    // Navigate to next screen
+                } else {
+                    Alert.alert('Error', data.message || 'Registration failed.');
+                }
+            })
+            .catch(error => {
+                console.error('Network error:', error);
+                Alert.alert('Error', 'A network error occurred. Please try again.');
+            });
+
     };
 
     return (

@@ -1,29 +1,34 @@
-import React, { useState, forwardRef, useImperativeHandle } from 'react';
+// components/LoginScreenComponents/NameSurnameInputField.tsx
+
+import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, TextInput, StyleSheet, View, Keyboard } from 'react-native';
 import { scaleFont } from '../utils/ResponsiveFont';
+import { UserModel } from '@/models/UserModel';
+import { validateName } from '../utils/validationUtils'; // Import your utility
 
-type NameSurnameFieldProps = {};
-
-export interface NameSurnameFieldHandles {
-    getFieldsText(): { firstName: string, surname: string };
-}
-
-const NameSurnameField = forwardRef<NameSurnameFieldHandles, NameSurnameFieldProps>((_, ref) => {
-    const [fullName, setFullName] = useState<string>('');
-
-    useImperativeHandle(ref, () => ({
-        getFieldsText(): { firstName: string, surname: string } {
-            const names = fullName.trim().split(/\s+/);
-            const firstName = names.slice(0, -1).join(' ') || names[0];
-            const surname = names[names.length - 1];
-            return { firstName, surname };
-        }
-    }));
+const NameSurnameField = () => {
+    const user = UserModel.getInstance();
+    const [fullName, setFullName] = useState<string>(user.getFullName() || '');
 
     const handleTextChange = (text: string) => {
         // Remove any non-letter characters except for spaces
-        setFullName(text.replace(/[^a-zA-Z\s]/g, ''));
+        const cleanedText = text.replace(/[^a-zA-Z\s]/g, '');
+        setFullName(cleanedText);
+        updateUserModel(cleanedText);
     };
+
+    const updateUserModel = (name: string) => {
+        const names = name.trim().split(/\s+/);
+        const firstName = names.slice(0, -1).join(' ') || names[0] || '';
+        const surname = names.length > 1 ? names[names.length - 1] : '';
+        user.setName(firstName);
+        user.setSurname(surname);
+    };
+
+    useEffect(() => {
+        // Initialize UserModel with current fullName
+        updateUserModel(fullName);
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -38,7 +43,7 @@ const NameSurnameField = forwardRef<NameSurnameFieldHandles, NameSurnameFieldPro
             </TouchableOpacity>
         </View>
     );
-});
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -49,16 +54,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderColor: '#ddd',
         borderWidth: 1,
-        borderRadius: 16,
-        paddingHorizontal: 15,
+        borderRadius: scaleFont(16),
+        paddingHorizontal: scaleFont(15),
         backgroundColor: '#fff',
         width: '100%',
         height: scaleFont(50),
     },
     input: {
-        marginLeft: 10,
+        marginLeft: scaleFont(10),
         flex: 1,
-        fontSize: 17,
+        fontSize: scaleFont(17),
         color: '#1a1818',
         fontFamily: 'Poppins-Regular',
     },

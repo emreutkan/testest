@@ -33,8 +33,47 @@ const LoginPage: React.FC = () => {
 
     const handleLoginButton = (): void => {
         if (phoneLogin) {
-            handlePhoneSubmit();
+            const phoneNumber = user.getPhoneNumber();
+            const selectedCode = user.getSelectedCode();
+
+            if (!phoneNumber) {
+                Alert.alert('Error', 'Phone number cannot be empty.');
+                return;
+            }
+
+            if (!user.isValidPhone()) {
+                Alert.alert('Error', 'Please enter a valid phone number.');
+                return;
+            }
+
+            const loginData = {
+                phoneNumber,
+                selectedCode,
+            };
+
+            // Send data to backend
+            fetch('http://192.168.1.3:3000/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginData),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Alert.alert('Success', 'Login successful!');
+                        router.push('/NextScreen');
+                    } else {
+                        Alert.alert('Error', data.message || 'Login failed.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Alert.alert('Error', 'An error occurred during login.');
+                });
         } else {
+            // Handle email login
             handleEmailSubmit();
         }
     };
@@ -46,42 +85,48 @@ const LoginPage: React.FC = () => {
     return (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View style={styles.bottomContainer}>
-                    <Text style={styles.welcomeText}>Last Call,</Text>
-                    <Text style={styles.welcomeText2}>Tasty Deals Await!</Text>
+                <Text style={styles.welcomeText}>Last Call,</Text>
+                <Text style={styles.welcomeText2}>Tasty Deals Await!</Text>
 
-                    {phoneLogin ? (
-                        <PhoneInput
-                            user={user}
-                        />
-                    ) : (
-                        <EmailLoginField />
-                    )}
+                {phoneLogin ? (
+                    <PhoneInput
+                        user={user}
+                    />
+                ) : (
+                    <EmailLoginField />
+                )}
 
-
-                    <View style={{ marginTop: scaleFont(10), marginBottom: scaleFont(50) }}>
+                <View style={{ flexDirection: 'row', marginTop: scaleFont(10), marginBottom: scaleFont(0), justifyContent: 'space-between' }}>
+                    <View style={{ flex: 0.5, marginRight: scaleFont(5) }}>
+                        <LoginButton onPress={() => router.push('./RegisterPage')} title={'Sign in'} />
+                    </View>
+                    <View style={{ flex: 0.5, marginLeft: scaleFont(5) }}>
                         <LoginButton onPress={handleLoginButton} />
                     </View>
-
-                    <View style={styles.registerContainer}>
-                        <Text style={styles.registerText}>or</Text>
-                        <TouchableOpacity onPress={() => router.push('./RegisterPage')}>
-                            <Text style={styles.registerTextClick}> Register here</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <AppleOTP />
-                    <GoogleSignInButton />
-
-                    {phoneLogin ? (
-                        <TouchableOpacity onPress={() => setPhoneLogin(false)}>
-                            <EmailSignInButton />
-                        </TouchableOpacity>
-                    ) : (
-                        <TouchableOpacity onPress={() => setPhoneLogin(true)}>
-                            <PhoneSignInButton />
-                        </TouchableOpacity>
-                    )}
                 </View>
+
+                <View style={styles.registerContainer}>
+
+                    <View style={{ marginVertical: scaleFont(20), alignItems: 'center', flexDirection: 'row' }}>
+                        <View style={{ flex: 1, height: 1, backgroundColor: '#ccc' }} />
+                        <Text style={{ marginHorizontal: scaleFont(10), fontSize: scaleFont(16), color: '#666' }}>or with</Text>
+                        <View style={{ flex: 1, height: 1, backgroundColor: '#ccc' }} />
+                    </View>
+                </View>
+
+                <AppleOTP />
+                <GoogleSignInButton />
+
+                {phoneLogin ? (
+                    <TouchableOpacity onPress={() => setPhoneLogin(false)}>
+                        <EmailSignInButton />
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity onPress={() => setPhoneLogin(true)}>
+                        <PhoneSignInButton />
+                    </TouchableOpacity>
+                )}
+            </View>
         </TouchableWithoutFeedback>
     );
 };

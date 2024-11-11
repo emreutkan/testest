@@ -1,13 +1,23 @@
+// components/LoginScreenComponents/EmailInput.tsx
+
 import React, { useState } from 'react';
-import { TouchableOpacity, TextInput, StyleSheet, View, Keyboard } from 'react-native';
+import { TouchableOpacity, TextInput, StyleSheet, Keyboard } from 'react-native';
 import { scaleFont } from '../utils/ResponsiveFont';
+import { UserModel } from '@/models/UserModel';
+
 const EmailLoginField: React.FC = () => {
-    const [email, setEmail] = useState<string>('');
+    const user = UserModel.getInstance();
+    const [email, setEmail] = useState<string>(user.getEmail() || '');
+
+    const handleEmailChange = (text: string) => {
+        setEmail(text);
+        user.setEmail(text);
+    };
 
     return (
         <TouchableOpacity
             style={styles.inputContainer}
-            onPress={() => Keyboard.dismiss()} // Dismiss keyboard if you click outside
+            onPress={() => Keyboard.dismiss()}
         >
             <TextInput
                 style={styles.buttonText}
@@ -16,8 +26,8 @@ const EmailLoginField: React.FC = () => {
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={email}
-                onChangeText={setEmail}
-                onFocus={() => console.log("Input Focused")} // Optional: log when focused
+                onChangeText={handleEmailChange}
+                onFocus={() => console.log("Input Focused")}
             />
         </TouchableOpacity>
     );
@@ -29,17 +39,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderColor: '#ddd',
         borderWidth: 1,
-        borderRadius: 16,
-        paddingHorizontal: 15,
+        borderRadius: scaleFont(16),
+        paddingHorizontal: scaleFont(15),
         backgroundColor: '#fff',
         width: '100%',
-        height: scaleFont(50)
+        height: scaleFont(50),
     },
-
     buttonText: {
-        marginLeft: 10,
+        marginLeft: scaleFont(10),
         flex: 1,
-        fontSize: 17,
+        fontSize: scaleFont(17),
         color: '#1a1818',
         fontFamily: 'Poppins-Regular',
     },

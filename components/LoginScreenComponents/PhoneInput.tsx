@@ -1,3 +1,5 @@
+// components/LoginScreenComponents/PhoneInput.tsx
+
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Modal, StyleSheet, Platform, Dimensions } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
@@ -11,14 +13,15 @@ const PhoneInput = () => {
     const [tempCode, setTempCode] = useState(user.getSelectedCode());
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState(user.getPhoneNumber() || '');
-    const [isTyping, setIsTyping] = useState(false);
+    const [isTyping, setIsTyping] = useState(user.getPhoneNumber() ? true : false);
 
     const handleChangeText = (text) => {
-        if (text.length <= 9) {
-            setPhoneNumber(text); // Update local state immediately
-            user.setPhoneNumber(text); // Update UserModel as needed
+        const cleanedText = text.replace(/[^0-9]/g, '');
+        if (cleanedText.length <= 15) {
+            setPhoneNumber(cleanedText); // Update local state immediately
+            user.setPhoneNumber(cleanedText); // Update UserModel as needed
         }
-        setIsTyping(text.length > 0);
+        setIsTyping(cleanedText.length > 0);
     };
 
     const handleClearText = () => {
@@ -62,7 +65,7 @@ const PhoneInput = () => {
                 onChangeText={handleChangeText}
                 value={phoneNumber}
                 keyboardType="phone-pad"
-                maxLength={9} // Enforces maximum of 9 characters
+                maxLength={15} // Enforces maximum of 15 characters
             />
             {isTyping && (
                 <TouchableOpacity onPress={handleClearText} style={styles.clearButton}>
@@ -150,7 +153,6 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: scaleFont(16),
         color: '#333',
-        // borderWidth: 1,
         textAlignVertical: 'center',
         fontFamily: Platform.OS === 'android' ? 'Poppins' : 'Poppins-Regular',
         paddingVertical: scaleFont(10),
