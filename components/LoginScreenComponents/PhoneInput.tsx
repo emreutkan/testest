@@ -6,6 +6,7 @@ import { Picker } from '@react-native-picker/picker';
 import { countryCodes } from '@/components/constants/countryCodes';
 import { scaleFont } from '@/components/utils/ResponsiveFont';
 import { UserModel } from "@/models/UserModel";
+import PasswordInputSingleton from './passwordInputSingleton'; // Import your password input component
 
 const PhoneInput = () => {
     const user = UserModel.getInstance();
@@ -14,20 +15,48 @@ const PhoneInput = () => {
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState(user.getPhoneNumber() || '');
     const [isTyping, setIsTyping] = useState(user.getPhoneNumber() ? true : false);
+    const passwordInputInstance = PasswordInputSingleton.getInstance();
 
-    const handleChangeText = (text) => {
+    const handleChangeText = (text: string) => {
         const cleanedText = text.replace(/[^0-9]/g, '');
-        if (cleanedText.length <= 15) {
+        if (cleanedText.length <= 10) {
             setPhoneNumber(cleanedText); // Update local state immediately
             user.setPhoneNumber(cleanedText); // Update UserModel as needed
         }
-        setIsTyping(cleanedText.length > 0);
+        if (cleanedText.length == 0) {
+            setIsTyping(false)
+            handleClearText()
+        }
+        else {
+            setIsTyping(true)
+            console.log(user.getPassword() + 'password from phone input handlechangetext')
+
+            user.getPhoneNumber().length == 0 && user.getEmail().length == 0 ? passwordInputInstance.setVisible(false) : passwordInputInstance.setVisible(true);
+
+        }
     };
 
     const handleClearText = () => {
         setPhoneNumber('');
         user.setPhoneNumber('');
         setIsTyping(false);
+        // user.setPassword('');
+        /*
+        * removed this line to allow this scenario to happen:
+        *
+        * user tries to login with phone number and enters the password then decides to login with email (or phone) instead
+        *
+        * and goes on with clicking X button to clear phone number then clicks login with email (or phone) button after that
+        *
+        * password that was entered will consistent
+        *
+        * if you uncomment it then password will reset
+        *
+        * */
+        console.log(user.getPassword() + 'password from phone input handleClearText')
+
+        user.getPhoneNumber().length == 0 && user.getEmail().length == 0 ? passwordInputInstance.setVisible(false) : passwordInputInstance.setVisible(true);
+
     };
 
     const handleConfirmSelection = () => {

@@ -1,11 +1,10 @@
-// models/UserModel.ts
-
 export class UserModel {
     private phoneNumber: string;
     private selectedCode: string;
     private email: string;
     private name: string;
     private surname: string;
+    private password: string; // Added password property
 
     private static instance: UserModel;
 
@@ -14,13 +13,15 @@ export class UserModel {
         selectedCode: string = '+90',
         email: string = '',
         name: string = '',
-        surname: string = ''
+        surname: string = '',
+        password: string = '' // Initialize password
     ) {
         this.phoneNumber = phoneNumber;
         this.selectedCode = selectedCode;
         this.email = email;
         this.name = name;
         this.surname = surname;
+        this.password = password;
     }
 
     // Singleton pattern to ensure only one instance exists
@@ -75,6 +76,15 @@ export class UserModel {
 
     public setSurname(surname: string): void {
         this.surname = surname;
+    }
+
+    // Getter and Setter for password
+    public getPassword(): string {
+        return this.password;
+    }
+
+    public setPassword(password: string): void {
+        this.password = password;
     }
 
     // Getter for full name

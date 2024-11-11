@@ -10,34 +10,22 @@ import { GoogleSignInButton, EmailSignInButton, PhoneSignInButton } from '@/comp
 import { UserModel } from '@/models/UserModel';
 import { useDispatch } from 'react-redux';
 import { setUserDetails, setLocation } from '@/slices/userSlice';
+import PasswordInputSingleton from '../../components/LoginScreenComponents/passwordInputSingleton'; // Import your password input component
 
 const LoginPage: React.FC = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const user = UserModel.getInstance(); // Use the singleton instance here
+    const passwordInputInstance = PasswordInputSingleton.getInstance();
+    const PasswordInput = passwordInputInstance.getComponent();
 
     const [phoneLogin, setPhoneLogin] = useState<boolean>(true);
-
-    const handlePhoneChange = (text: string) => {
-        user.setPhoneNumber(text);
-    };
-
-    const handlePhoneSubmit = (): void => {
-        if (user.getPhoneNumber().trim() === '') {
-            Alert.alert('Error', 'Phone number cannot be empty.');
-            return;
-        }
-        if (!user.isValidPhone()) {
-            Alert.alert('Error', 'Please enter a valid phone number.');
-            return;
-        }
-        router.push('/screensVerificationPage');
-    };
 
     const handleLoginButton = (): void => {
         if (phoneLogin) {
             const phoneNumber = user.getPhoneNumber();
             const selectedCode = user.getSelectedCode();
+            const password = user.getPassword(); // Fetch the password from the UserModel
 
             if (!phoneNumber) {
                 Alert.alert('Error', 'Phone number cannot be empty.');
@@ -49,9 +37,15 @@ const LoginPage: React.FC = () => {
                 return;
             }
 
+            if (!password) {
+                Alert.alert('Error', 'Password cannot be empty.');
+                return;
+            }
+
             const loginData = {
                 phoneNumber,
                 selectedCode,
+                password, // Include password in the login data
             };
 
             fetch('http://192.168.1.3:3000/login', {
@@ -60,12 +54,13 @@ const LoginPage: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(loginData),
-            }) .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
             })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     console.log('API Response:', data);
                     if (data.success && data.userData) {
@@ -83,8 +78,8 @@ const LoginPage: React.FC = () => {
                         if (data.userData.location) {
                             dispatch(setLocation(data.userData.location));
                         }
-                            router.push('./VerificationPage');
-                            Alert.alert('Success', 'Login successful!');
+                        router.push('../screensAfterLogin/afterlogin');
+                        Alert.alert('Success', 'Login successful!');
                     } else {
                         Alert.alert('Error', 'Login failed.');
                     }
@@ -110,11 +105,11 @@ const LoginPage: React.FC = () => {
                 <Text style={styles.welcomeText2}>Tasty Deals Await!</Text>
 
                 {phoneLogin ? (
-                    <PhoneInput user={user} onPhoneChange={handlePhoneChange} />
+                    <PhoneInput />
                 ) : (
                     <EmailLoginField />
                 )}
-
+                <PasswordInput></PasswordInput>
                 <View style={{ flexDirection: 'row', marginTop: scaleFont(10), marginBottom: scaleFont(0), justifyContent: 'space-between' }}>
                     <View style={{ flex: 0.5, marginRight: scaleFont(5) }}>
                         <LoginButton onPress={() => router.push('./RegisterPage')} title={'Sign in'} />

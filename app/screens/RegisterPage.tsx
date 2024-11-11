@@ -7,10 +7,13 @@ import PhoneInput from "@/components/LoginScreenComponents/PhoneInput";
 import { useRouter } from 'expo-router';
 import NameSurnameField from "@/components/LoginScreenComponents/NameSurnameInputField";
 import { UserModel } from "@/models/UserModel";
+import PasswordInputSingleton from '../../components/LoginScreenComponents/passwordInputSingleton'; // Import your password input component
 
 const RegisterScreen: React.FC = () => {
     const router = useRouter();
     const user = UserModel.getInstance(); // Use the singleton instance here
+    const passwordInputInstance = PasswordInputSingleton.getInstance();
+    const PasswordInput = passwordInputInstance.getComponent();
 
     const handleRegister = (): void => {
         const user = UserModel.getInstance();
@@ -20,21 +23,12 @@ const RegisterScreen: React.FC = () => {
             phoneNumber: user.getPhoneNumber(),
             selectedCode: user.getSelectedCode(),
             email: user.getEmail(),
+            password: user.getPassword(), // Include the password
         };
 
         // Validate data before sending
-        if (!userData.name || !userData.surname || !userData.phoneNumber || !userData.email) {
+        if (!userData.name || !userData.surname || !userData.phoneNumber || !userData.email || !userData.password) {
             Alert.alert('Error', 'Please fill in all the required fields.');
-            return;
-        }
-
-        if (!user.isValidEmail()) {
-            Alert.alert('Error', 'Please enter a valid email address.');
-            return;
-        }
-
-        if (!user.isValidPhone()) {
-            Alert.alert('Error', 'Please enter a valid phone number.');
             return;
         }
 
@@ -59,7 +53,6 @@ const RegisterScreen: React.FC = () => {
                 console.error('Network error:', error);
                 Alert.alert('Error', 'A network error occurred. Please try again.');
             });
-
     };
 
     return (
@@ -71,10 +64,13 @@ const RegisterScreen: React.FC = () => {
                             <NameSurnameField />
                         </View>
                         <View style={styles.inputArea}>
-                            <PhoneInput user={user} />
+                            <PhoneInput />
                         </View>
                         <View style={styles.inputArea}>
                             <EmailLoginField />
+                        </View>
+                        <View style={styles.inputArea}>
+                            <PasswordInput />
                         </View>
 
                         <View style={styles.buttonArea}>
