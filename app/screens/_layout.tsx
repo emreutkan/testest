@@ -1,14 +1,14 @@
 // app/_layout.tsx
-import { Slot } from "expo-router";
+import { Slot, usePathname } from "expo-router";
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, StyleSheet, Platform } from 'react-native';
+import { Animated, Dimensions, StyleSheet, Platform, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function RootLayout() {
     const screenHeight = Dimensions.get('window').height;
     const isSmallScreen = screenHeight < 700;
 
-    // Initialize Animated.Values to pre-animation states
+    // Initialize Animated.Values for initial animations
     const imagePosition = useRef(new Animated.Value(isSmallScreen ? screenHeight : screenHeight / 2 - 125)).current;
     const formPosition = useRef(new Animated.Value(screenHeight)).current;
     const imageOpacity = useRef(new Animated.Value(1)).current;
@@ -16,12 +16,42 @@ export default function RootLayout() {
     const imageScale = useRef(new Animated.Value(1.5)).current;
     const [showImage, setShowImage] = useState(!isSmallScreen);
 
+    // Navigation history and direction
+    const [navigationStack, setNavigationStack] = useState<string[]>([]);
+    const [direction, setDirection] = useState<'forward' | 'back'>('forward');
+    const pathname = usePathname();
+
+    // Animation values for Slot
+    const slotTranslateX = useRef(new Animated.Value(0)).current;
+    const slotOpacity = useRef(new Animated.Value(0)).current;
+
+    // Update navigation stack and direction
+    useEffect(() => {
+        setNavigationStack((prevStack) => {
+            const newStack = [...prevStack];
+            const currentIndex = newStack.indexOf(pathname);
+
+            if (currentIndex === -1) {
+                // Navigating forward
+                setDirection('forward');
+                newStack.push(pathname);
+            } else {
+                // Navigating back
+                setDirection('back');
+                newStack.splice(currentIndex + 1);
+            }
+
+            return newStack;
+        });
+    }, [pathname]);
+
+    // Initial animations for logo and form
     useEffect(() => {
         const formFinalPositionBottomView = isSmallScreen ? screenHeight * 0.1 : screenHeight * 0.025;
         const animationSpeed = 1500;
 
-        // Define animations
-        const animations = [
+        // Define initial animations
+        const initialAnimations = [
             Animated.timing(imageOpacity, {
                 toValue: 1,
                 duration: 500,
@@ -51,7 +81,7 @@ export default function RootLayout() {
 
         // Additional animation for small screens
         if (isSmallScreen) {
-            animations.push(
+            initialAnimations.push(
                 Animated.timing(imageOpacity, {
                     toValue: 0,
                     duration: animationSpeed,
@@ -60,9 +90,9 @@ export default function RootLayout() {
             );
         }
 
-        // Start animations after a short delay
+        // Start initial animations after a short delay
         const timer = setTimeout(() => {
-            Animated.parallel(animations).start(() => {
+            Animated.parallel(initialAnimations).start(() => {
                 if (isSmallScreen) {
                     setShowImage(false);
                 }
@@ -72,6 +102,31 @@ export default function RootLayout() {
         // Cleanup timeout on unmount
         return () => clearTimeout(timer);
     }, [isSmallScreen, imageOpacity, imagePosition, imageScale, formPosition, scrollViewOpacity, screenHeight]);
+
+    // Animate Slot on route changes based on direction
+    useEffect(() => {
+        // Determine the initial translateX based on direction
+        const initialTranslateX = direction === 'forward' ? Dimensions.get('window').width : -Dimensions.get('window').width;
+
+        // Reset animation values
+        slotTranslateX.setValue(initialTranslateX);
+        slotOpacity.setValue(0);
+
+        // Start slide-in animation
+        Animated.parallel([
+            Animated.timing(slotTranslateX, {
+                toValue: 0,
+                duration: 300,
+                easing: Easing.out(Easing.ease),
+                useNativeDriver: true,
+            }),
+            Animated.timing(slotOpacity, {
+                toValue: 1,
+                duration: 300,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [pathname, direction, slotTranslateX, slotOpacity]);
 
     return (
         <LinearGradient
@@ -100,16 +155,29 @@ export default function RootLayout() {
                         transform: [{ translateY: formPosition }],
                         opacity: scrollViewOpacity,
                         height: isSmallScreen ? '100%' : screenHeight * 1.1,
+                        borderTopLeftRadius: 30,
+                        borderTopRightRadius: 30,
+                        overflow: 'hidden', // Ensure this is added
                     },
                 ]}
             >
-                <Slot /> 
+                {/* Animated Slot for navigation */}
+                <Animated.View
+                    style={{
+                        flex: 1,
+                        transform: [{ translateX: slotTranslateX }],
+                        opacity: slotOpacity,
+                    }}
+                >
+                    <Slot />
+                </Animated.View>
             </Animated.View>
         </LinearGradient>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
+
     container: {
         flex: 1,
         alignItems: 'center',
