@@ -3,18 +3,19 @@ import { Slot, usePathname } from "expo-router";
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, StyleSheet, Platform, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import {scaleFont} from "@/components/utils/ResponsiveFont";
 
 export default function RootLayout() {
-    const screenHeight = Dimensions.get('window').height;
+    const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
     const isSmallScreen = screenHeight < 700;
+    const [showImage, setShowImage] = useState(!isSmallScreen);
 
-    // Initialize Animated.Values for initial animations
+    // Animated values
     const imagePosition = useRef(new Animated.Value(isSmallScreen ? screenHeight : screenHeight / 2 - 125)).current;
     const formPosition = useRef(new Animated.Value(screenHeight)).current;
     const imageOpacity = useRef(new Animated.Value(1)).current;
     const scrollViewOpacity = useRef(new Animated.Value(0)).current;
     const imageScale = useRef(new Animated.Value(1.5)).current;
-    const [showImage, setShowImage] = useState(!isSmallScreen);
 
     // Navigation history and direction
     const [navigationStack, setNavigationStack] = useState<string[]>([]);
@@ -47,77 +48,70 @@ export default function RootLayout() {
 
     // Initial animations for logo and form
     useEffect(() => {
-        const formFinalPositionBottomView = isSmallScreen ? screenHeight * 0.1 : screenHeight * 0.025;
-        const animationSpeed = 1500;
+        const formFinalPosition = isSmallScreen ? screenHeight * 0.1 : screenHeight * 0.025;
+        const animationDuration = 1500;
 
-        // Define initial animations
-        const initialAnimations = [
+        const initialAnimations = Animated.parallel([
             Animated.timing(imageOpacity, {
                 toValue: 1,
                 duration: 500,
                 useNativeDriver: true,
             }),
             Animated.timing(imagePosition, {
-                toValue: isSmallScreen ? screenHeight * 0.1 : 0, // Adjust as needed
-                duration: animationSpeed,
+                toValue: isSmallScreen ? screenHeight * 0.1 : 0,
+                duration: animationDuration,
                 useNativeDriver: Platform.OS !== 'web',
             }),
             Animated.timing(imageScale, {
                 toValue: 1,
-                duration: animationSpeed,
+                duration: animationDuration,
                 useNativeDriver: Platform.OS !== 'web',
             }),
             Animated.timing(formPosition, {
-                toValue: formFinalPositionBottomView,
-                duration: animationSpeed,
+                toValue: formFinalPosition,
+                duration: animationDuration,
                 useNativeDriver: Platform.OS !== 'web',
             }),
             Animated.timing(scrollViewOpacity, {
                 toValue: 1,
-                duration: animationSpeed,
+                duration: animationDuration,
                 useNativeDriver: Platform.OS !== 'web',
             }),
-        ];
+        ]);
 
-        // Additional animation for small screens
-        if (isSmallScreen) {
-            initialAnimations.push(
-                Animated.timing(imageOpacity, {
-                    toValue: 0,
-                    duration: animationSpeed,
-                    useNativeDriver: true,
-                })
-            );
-        }
+        const fadeOutAnimation = Animated.timing(imageOpacity, {
+            toValue: 0,
+            duration: animationDuration,
+            useNativeDriver: true,
+        });
 
-        // Start initial animations after a short delay
+        const animationSequence = isSmallScreen
+            ? Animated.sequence([initialAnimations, fadeOutAnimation])
+            : initialAnimations;
+
         const timer = setTimeout(() => {
-            Animated.parallel(initialAnimations).start(() => {
+            animationSequence.start(() => {
                 if (isSmallScreen) {
                     setShowImage(false);
                 }
             });
-        }, 500); // Delay in milliseconds before starting the animation
+        }, 500);
 
-        // Cleanup timeout on unmount
         return () => clearTimeout(timer);
-    }, [isSmallScreen, imageOpacity, imagePosition, imageScale, formPosition, scrollViewOpacity, screenHeight]);
+    }, [isSmallScreen, screenHeight]);
 
     // Animate Slot on route changes based on direction
     useEffect(() => {
-        // Determine the initial translateX based on direction
-        const initialTranslateX = direction === 'forward' ? Dimensions.get('window').width : -Dimensions.get('window').width;
+        const initialTranslateX = direction === 'forward' ? screenWidth : -screenWidth;
 
-        // Reset animation values
         slotTranslateX.setValue(initialTranslateX);
         slotOpacity.setValue(0);
 
-        // Start slide-in animation
         Animated.parallel([
             Animated.timing(slotTranslateX, {
                 toValue: 0,
                 duration: 300,
-                easing: Easing.out(Easing.ease),
+                easing: Easing.bezier(0.25, 0.1, 0.25, 1), // Custom cubic bezier easing for smoother animation
                 useNativeDriver: true,
             }),
             Animated.timing(slotOpacity, {
@@ -126,7 +120,7 @@ export default function RootLayout() {
                 useNativeDriver: true,
             }),
         ]).start();
-    }, [pathname, direction, slotTranslateX, slotOpacity]);
+    }, [pathname, direction, screenWidth]);
 
     return (
         <LinearGradient
@@ -157,7 +151,7 @@ export default function RootLayout() {
                         height: isSmallScreen ? '100%' : screenHeight * 1.1,
                         borderTopLeftRadius: 30,
                         borderTopRightRadius: 30,
-                        overflow: 'hidden', // Ensure this is added
+                        overflow: 'hidden',
                     },
                 ]}
             >
@@ -177,23 +171,22 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-
     container: {
         flex: 1,
         alignItems: 'center',
     },
     logo: {
-        width: 150,
-        height: 150,
-        marginTop: 50,
-        marginBottom: 20,
+        width: scaleFont(150),
+        height: scaleFont(150),
+        marginTop: scaleFont(60),
+        marginBottom: scaleFont(0),
     },
     main: {
         flex: 1,
         width: '100%',
         backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
+        borderTopLeftRadius: scaleFont(25),
+        borderTopRightRadius: scaleFont(25),
         ...Platform.select({
             ios: {
                 shadowColor: '#000',

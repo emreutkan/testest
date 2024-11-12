@@ -10,7 +10,7 @@ import { GoogleSignInButton, EmailSignInButton, PhoneSignInButton } from '@/comp
 import { UserModel } from '@/models/UserModel';
 import { useDispatch } from 'react-redux';
 import { setUserDetails, setLocation } from '@/slices/userSlice';
-import PasswordInputSingleton from '../../components/LoginScreenComponents/passwordInputSingleton'; // Import your password input component
+import PasswordInputSingleton from '../../components/LoginScreenComponents/passwordInputSingleton';
 
 const LoginPage: React.FC = () => {
     const router = useRouter();

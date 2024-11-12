@@ -6,6 +6,7 @@ import { Slot } from 'expo-router';
 const Layout = () => {
   return (
       <Provider store={store}>
+
         <Slot />
       </Provider>
   );
