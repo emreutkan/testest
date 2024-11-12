@@ -5,6 +5,9 @@ export class UserModel {
     private name: string;
     private surname: string;
     private password: string; // Added password property
+    private cart: { id: string; name: string; quantity: number; price: number }[] = []; // Cart items
+    private addresses: string[] = []; // User's addresses
+    private currentAddress: string | null = null; // Selected current address
 
     private static instance: UserModel;
 
@@ -92,6 +95,59 @@ export class UserModel {
         return `${this.name} ${this.surname}`.trim();
     }
 
+    // Cart Management Methods
+    public addToCart(item: { id: string; name: string; quantity: number; price: number }): void {
+        const existingItem = this.cart.find(cartItem => cartItem.id === item.id);
+        if (existingItem) {
+            existingItem.quantity += item.quantity;
+        } else {
+            this.cart.push(item);
+        }
+    }
+
+    public removeFromCart(itemId: string): void {
+        this.cart = this.cart.filter(cartItem => cartItem.id !== itemId);
+    }
+
+    public clearCart(): void {
+        this.cart = [];
+    }
+
+    public getCart(): { id: string; name: string; quantity: number; price: number }[] {
+        return this.cart;
+    }
+
+    // Address Management Methods
+    public addAddress(address: string): void {
+        if (!this.addresses.includes(address)) {
+            this.addresses.push(address);
+        }
+    }
+
+    public removeAddress(address: string): void {
+        this.addresses = this.addresses.filter(addr => addr !== address);
+        // If the removed address is the current address, reset currentAddress
+        if (this.currentAddress === address) {
+            this.currentAddress = null;
+        }
+    }
+
+    public getAddresses(): string[] {
+        return this.addresses;
+    }
+
+    public setCurrentAddress(address: string): void {
+        if (this.addresses.includes(address)) {
+            this.currentAddress = address;
+        } else {
+            console.warn('Address not found in user addresses.');
+        }
+    }
+
+    public getCurrentAddress(): string | null {
+        return this.currentAddress;
+    }
+
     // Validation method for phone number
     public isValidPhone(): boolean {
         // Validates that the phone number consists of 10 to 15 digits
@@ -105,6 +161,4 @@ export class UserModel {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(this.email);
     }
-
-    // Additional validation methods can be added as needed
 }

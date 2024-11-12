@@ -7,15 +7,27 @@ interface CartItem {
     price: number;
 }
 
+interface UserDetails {
+    name: string;
+    surname: string;
+    email: string;
+    phoneNumber: string;
+}
+
+interface Location {
+    latitude: number;
+    longitude: number;
+}
+
 interface UserState {
     name: string;
     surname: string;
     email: string;
     phoneNumber: string;
-    location: { latitude: number; longitude: number } | null;
-    addresses: string[]; // Array to store multiple addresses
-    cart: CartItem[]; // Array to store cart items
-    favorites: string[]; // Array to store favorite items (can be strings or objects, depending on your requirements)
+    location: Location | null;
+    addresses: string[];
+    cart: CartItem[];
+    favorites: string[];
 }
 
 const initialState: UserState = {
@@ -33,13 +45,13 @@ const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
-        setUserDetails: (state, action: PayloadAction<{ name: string; surname: string; email: string; phoneNumber: string }>) => {
+        setUserDetails: (state, action: PayloadAction<UserDetails>) => {
             state.name = action.payload.name;
             state.surname = action.payload.surname;
             state.email = action.payload.email;
             state.phoneNumber = action.payload.phoneNumber;
         },
-        setLocation: (state, action: PayloadAction<{ latitude: number; longitude: number }>) => {
+        setLocation: (state, action: PayloadAction<Location>) => {
             state.location = action.payload;
         },
         addAddress: (state, action: PayloadAction<string>) => {
@@ -70,6 +82,9 @@ const userSlice = createSlice({
         removeFavorite: (state, action: PayloadAction<string>) => {
             state.favorites = state.favorites.filter(item => item !== action.payload);
         },
+        resetUser: (state) => {
+            return initialState;
+        },
     },
 });
 
@@ -82,7 +97,8 @@ export const {
     removeItemFromCart,
     clearCart,
     addFavorite,
-    removeFavorite
+    removeFavorite,
+    resetUser,
 } = userSlice.actions;
 
 export default userSlice.reducer;

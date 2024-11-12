@@ -1,4 +1,5 @@
-// app/_layout.tsx
+// app/screens/loginRegister/_layout.tsx
+
 import { Slot, usePathname } from "expo-router";
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, StyleSheet, Platform, Easing } from 'react-native';
@@ -6,38 +7,46 @@ import { LinearGradient } from 'expo-linear-gradient';
 import {scaleFont} from "@/components/utils/ResponsiveFont";
 
 export default function RootLayout() {
+    // Get screen dimensions
     const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
+
+    /*
+    Determine if the screen is considered small, if its small then the logo won't be shown to allow full visibility on main view at the bottom side */
     const isSmallScreen = screenHeight < 700;
     const [showImage, setShowImage] = useState(!isSmallScreen);
+    /**/
 
-    // Animated values
-    const imagePosition = useRef(new Animated.Value(isSmallScreen ? screenHeight : screenHeight / 2 - 125)).current;
-    const formPosition = useRef(new Animated.Value(screenHeight)).current;
-    const imageOpacity = useRef(new Animated.Value(1)).current;
-    const scrollViewOpacity = useRef(new Animated.Value(0)).current;
-    const imageScale = useRef(new Animated.Value(1.5)).current;
 
-    // Navigation history and direction
-    const [navigationStack, setNavigationStack] = useState<string[]>([]);
-    const [direction, setDirection] = useState<'forward' | 'back'>('forward');
-    const pathname = usePathname();
+    // Animated values for logo and form animations
+    const imagePosition = useRef(new Animated.Value(isSmallScreen ? screenHeight : screenHeight / 2 - 125)).current; // Vertical position of the logo
+    const formPosition = useRef(new Animated.Value(screenHeight)).current; // Vertical position of the form
+    const imageOpacity = useRef(new Animated.Value(1)).current; // Opacity of the logo
+    const scrollViewOpacity = useRef(new Animated.Value(0)).current; // Opacity of the form scroll view
+    const imageScale = useRef(new Animated.Value(1.5)).current; // Scale of the logo image
 
-    // Animation values for Slot
-    const slotTranslateX = useRef(new Animated.Value(0)).current;
-    const slotOpacity = useRef(new Animated.Value(0)).current;
+    // State to manage navigation history and direction
+    const [navigationStack, setNavigationStack] = useState<string[]>([]); // Stack to keep track of navigation paths
+    const [direction, setDirection] = useState<'forward' | 'back'>('forward'); // Direction of navigation
+    const pathname = usePathname(); // Current route pathname
 
-    // Update navigation stack and direction
+    // Animated values for Slot transitions
+    const slotTranslateX = useRef(new Animated.Value(0)).current; // Horizontal translation for Slot
+    const slotOpacity = useRef(new Animated.Value(0)).current; // Opacity for Slot
+
+    /**
+     * Effect to update navigation stack and determine navigation direction
+     */
     useEffect(() => {
         setNavigationStack((prevStack) => {
             const newStack = [...prevStack];
             const currentIndex = newStack.indexOf(pathname);
 
             if (currentIndex === -1) {
-                // Navigating forward
+                // If the current pathname is not in the stack, navigate forward
                 setDirection('forward');
                 newStack.push(pathname);
             } else {
-                // Navigating back
+                // If the pathname exists in the stack, navigate back
                 setDirection('back');
                 newStack.splice(currentIndex + 1);
             }
@@ -46,32 +55,41 @@ export default function RootLayout() {
         });
     }, [pathname]);
 
-    // Initial animations for logo and form
+    /**
+     * Effect to handle initial animations for the logo and form when the component mounts
+     */
     useEffect(() => {
+        // Determine the final position of the form based on screen size
         const formFinalPosition = isSmallScreen ? screenHeight * 0.1 : screenHeight * 0.025;
-        const animationDuration = 1500;
+        const animationDuration = 1500; // Duration for the animations in milliseconds
 
+        // Define parallel animations for the logo and form
         const initialAnimations = Animated.parallel([
+            // Animate logo opacity to fully visible
             Animated.timing(imageOpacity, {
                 toValue: 1,
                 duration: 500,
                 useNativeDriver: true,
             }),
+            // Animate logo position to its final vertical position
             Animated.timing(imagePosition, {
                 toValue: isSmallScreen ? screenHeight * 0.1 : 0,
                 duration: animationDuration,
                 useNativeDriver: Platform.OS !== 'web',
             }),
+            // Animate logo scale down to original size
             Animated.timing(imageScale, {
                 toValue: 1,
                 duration: animationDuration,
                 useNativeDriver: Platform.OS !== 'web',
             }),
+            // Animate form position to its final vertical position
             Animated.timing(formPosition, {
                 toValue: formFinalPosition,
                 duration: animationDuration,
                 useNativeDriver: Platform.OS !== 'web',
             }),
+            // Animate form opacity to fully visible
             Animated.timing(scrollViewOpacity, {
                 toValue: 1,
                 duration: animationDuration,
@@ -79,41 +97,54 @@ export default function RootLayout() {
             }),
         ]);
 
+        // Define fade-out animation for the logo (only for small screens)
         const fadeOutAnimation = Animated.timing(imageOpacity, {
             toValue: 0,
             duration: animationDuration,
             useNativeDriver: true,
         });
 
+        // Sequence animations: initial animations followed by fade-out if on a small screen
         const animationSequence = isSmallScreen
             ? Animated.sequence([initialAnimations, fadeOutAnimation])
             : initialAnimations;
 
+        // Start animations after a short delay
         const timer = setTimeout(() => {
             animationSequence.start(() => {
                 if (isSmallScreen) {
+                    // Hide the logo image after fade-out completes on small screens
                     setShowImage(false);
                 }
             });
-        }, 500);
+        }, 500); // Delay before starting animations
 
+        // Cleanup the timer when the component unmounts or dependencies change
         return () => clearTimeout(timer);
     }, [isSmallScreen, screenHeight]);
 
-    // Animate Slot on route changes based on direction
+    /**
+     * Effect to animate the Slot component when the route changes
+     * The animation direction depends on whether navigating forward or back
+     */
     useEffect(() => {
+        // Set the initial horizontal position based on navigation direction
         const initialTranslateX = direction === 'forward' ? screenWidth : -screenWidth;
 
+        // Initialize Slot's animated values
         slotTranslateX.setValue(initialTranslateX);
         slotOpacity.setValue(0);
 
+        // Define parallel animations for Slot's entrance
         Animated.parallel([
+            // Animate Slot sliding in horizontally
             Animated.timing(slotTranslateX, {
                 toValue: 0,
                 duration: 300,
-                easing: Easing.bezier(0.25, 0.1, 0.25, 1), // Custom cubic bezier easing for smoother animation
+                easing: Easing.bezier(0.25, 0.1, 0.25, 1), // Custom easing for smooth animation
                 useNativeDriver: true,
             }),
+            // Animate Slot's opacity to fully visible
             Animated.timing(slotOpacity, {
                 toValue: 1,
                 duration: 300,
@@ -149,13 +180,10 @@ export default function RootLayout() {
                         transform: [{ translateY: formPosition }],
                         opacity: scrollViewOpacity,
                         height: isSmallScreen ? '100%' : screenHeight * 1.1,
-                        borderTopLeftRadius: 30,
-                        borderTopRightRadius: 30,
-                        overflow: 'hidden',
+                        overflow: 'hidden', // Keep overflow if needed
                     },
                 ]}
             >
-                {/* Animated Slot for navigation */}
                 <Animated.View
                     style={{
                         flex: 1,
@@ -182,20 +210,21 @@ const styles = StyleSheet.create({
         marginBottom: scaleFont(0),
     },
     main: {
-        flex: 1,
-        width: '100%',
-        backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: scaleFont(25),
-        borderTopRightRadius: scaleFont(25),
+        flex: 1, // Fill available space
+        width: '100%', // Full width
+        backgroundColor: '#FFFFFF', // White background
+        borderTopLeftRadius: scaleFont(25), // Rounded top-left corner
+        borderTopRightRadius: scaleFont(25), // Rounded top-right corner
+        // Platform-specific shadow styles
         ...Platform.select({
             ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: -3 },
-                shadowOpacity: 0.1,
-                shadowRadius: 5,
+                shadowColor: '#000', // Shadow color for iOS
+                shadowOffset: { width: 0, height: -3 }, // Shadow offset for iOS
+                shadowOpacity: 0.1, // Shadow opacity for iOS
+                shadowRadius: 5, // Shadow radius for iOS
             },
             android: {
-                elevation: 10,
+                elevation: 10, // Elevation for Android shadows
             },
         }),
     },
