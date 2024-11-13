@@ -19,13 +19,24 @@ interface Location {
     longitude: number;
 }
 
+interface Address {
+    street: string;
+    neighborhood: string;
+    district: string;
+    province: string;
+    country: string;
+    postalCode: string;
+    apartmentNo: string;
+}
+
 interface UserState {
     name: string;
     surname: string;
     email: string;
     phoneNumber: string;
     location: Location | null;
-    addresses: string[];
+    addresses: Address[]; // Update addresses to hold Address type
+    currentAddress: Address | null; // Add a new field for current address
     cart: CartItem[];
     favorites: string[];
 }
@@ -37,6 +48,7 @@ const initialState: UserState = {
     phoneNumber: '',
     location: null,
     addresses: [],
+    currentAddress: null, // Initialize new field
     cart: [],
     favorites: [],
 };
@@ -54,11 +66,14 @@ const userSlice = createSlice({
         setLocation: (state, action: PayloadAction<Location>) => {
             state.location = action.payload;
         },
-        addAddress: (state, action: PayloadAction<string>) => {
+        addAddress: (state, action: PayloadAction<Address>) => {
             state.addresses.push(action.payload);
         },
         removeAddress: (state, action: PayloadAction<string>) => {
-            state.addresses = state.addresses.filter(address => address !== action.payload);
+            state.addresses = state.addresses.filter(address => address.street !== action.payload);
+        },
+        setCurrentAddress: (state, action: PayloadAction<Address>) => {
+            state.currentAddress = action.payload;
         },
         addItemToCart: (state, action: PayloadAction<CartItem>) => {
             const existingItem = state.cart.find(item => item.id === action.payload.id);
@@ -93,6 +108,7 @@ export const {
     setLocation,
     addAddress,
     removeAddress,
+    setCurrentAddress, // Export new action
     addItemToCart,
     removeItemFromCart,
     clearCart,
