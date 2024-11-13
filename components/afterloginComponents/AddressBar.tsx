@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/app/store'; // Adjust this import to match your store structure
 import { scaleFont } from '@/components/utils/ResponsiveFont';
 import { Ionicons } from '@expo/vector-icons'; // Make sure you have this package installed: `expo install @expo/vector-icons`
-import loginButton from "@/components/LoginScreenComponents/loginButton";
 import LoginButton from "@/components/LoginScreenComponents/loginButton";
-import {router} from "expo-router";
+import { router } from "expo-router";
+
 interface Address {
     street: string;
     neighborhood: string;
@@ -16,11 +16,12 @@ interface Address {
     postalCode: string;
     apartmentNo: string;
 }
+
 const AddressBar: React.FC = () => {
     const addresses = useSelector((state: RootState) => state.user.addresses) as Address[];
     const [selectedAddress, setSelectedAddress] = useState<Address | null>(addresses.length > 0 ? addresses[0] : null);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
-    const [containerWidth, setContainerWidth] = useState<number>(0);
+    const [textWidth, setTextWidth] = useState<number>(0);
 
     const handleAddressSelect = (address: Address) => {
         setSelectedAddress(address);
@@ -28,44 +29,36 @@ const AddressBar: React.FC = () => {
     };
 
     const renderAddressContent = () => {
-        if (containerWidth <= scaleFont(100)) {
-            console.log(containerWidth)
-            return null;
-        } else if (containerWidth > scaleFont(100) && containerWidth <= scaleFont(200)) {
-            console.log(containerWidth)
-
-            return (
-                <Text style={styles.addressText}>
-                    {selectedAddress ? selectedAddress.street : 'no\naddress'}
-                </Text>
-            );
+        if (!selectedAddress) return 'No address selected';
+        if (textWidth <= scaleFont(100)) {
+            return selectedAddress.street;
+        } else if (textWidth > scaleFont(100) && textWidth <= scaleFont(200)) {
+            return `${selectedAddress.street}`;
         } else {
-            console.log(containerWidth)
-
-            return (
-                <Text style={styles.addressText}>
-                    {selectedAddress
-                        ? `${selectedAddress.street}, ${selectedAddress.district}`
-                        : 'No address selected'}
-                </Text>
-            );
+            return `${selectedAddress.street}, ${selectedAddress.district}`;
         }
     };
 
     const switchToAddAddress = () => {
-        router.push('../addressSelectionScreen')
-    }
+        router.push('../addressSelectionScreen');
+    };
 
     return (
         <View
-            style={styles.addressBar}
-            onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width)}
+            style={[
+                styles.addressBar,
+                { minWidth: textWidth + scaleFont(40) } // Adjust minWidth dynamically
+            ]}
         >
             <Ionicons name="location-sharp" size={scaleFont(20)} color="#666" style={styles.icon} />
-            {renderAddressContent()}
+            <Text
+                style={styles.addressText}
+                onLayout={(event) => setTextWidth(event.nativeEvent.layout.width)}
+            >
+                {renderAddressContent()}
+            </Text>
 
-            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.touchableOverlay}>
-            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.touchableOverlay} />
 
             {modalVisible && (
                 <Modal
@@ -91,9 +84,7 @@ const AddressBar: React.FC = () => {
                                 <Text style={styles.addAddressOptionText}> + Add new address</Text>
                             </TouchableOpacity>
 
-                            <LoginButton onPress={() => setModalVisible(false)} style={styles.closeButton} title={"Close"}>
-                            </LoginButton>
-
+                            <LoginButton onPress={() => setModalVisible(false)} style={styles.closeButton} title="Close" />
                         </View>
                     </View>
                 </Modal>
@@ -110,24 +101,21 @@ const styles = StyleSheet.create({
         borderRadius: scaleFont(20),
         backgroundColor: '#f1f1f1',
         borderColor: '#ccc',
-        borderWidth: 5,
+        borderWidth: 1,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         shadowRadius: 3,
         elevation: 2,
-        marginTop: scaleFont(45),
-        width: '110%',
-
+        maxHeight: scaleFont(60),
+        minWidth: scaleFont(120),
     },
     addressText: {
         fontSize: scaleFont(16),
         color: '#333',
         marginLeft: scaleFont(8),
-
     },
-    icon: {
-    },
+    icon: {},
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',
@@ -159,10 +147,6 @@ const styles = StyleSheet.create({
         padding: scaleFont(10),
         backgroundColor: '#ccc',
         borderRadius: scaleFont(5),
-    },
-    closeButtonText: {
-        color: '#fff',
-        fontSize: scaleFont(16),
     },
     touchableOverlay: {
         position: 'absolute',
