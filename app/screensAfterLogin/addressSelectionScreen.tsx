@@ -11,7 +11,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     TouchableOpacity,
-    Image,
+    Animated, Easing,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { addAddress, setCurrentAddress } from '@/slices/userSlice';
@@ -19,11 +19,9 @@ import { useNavigation } from '@react-navigation/native';
 import MapView, { Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { MaterialIcons } from '@expo/vector-icons';
-import LoginButton from "@/components/LoginScreenComponents/loginButton"; // Keep only one import
+import LoginButton from '@/components/LoginScreenComponents/loginButton'; // Keep only one import
 import debounce from 'lodash.debounce';
-
-// Import custom marker image
-import customMarker from '@/assets/images/logo.png'; // Ensure the path is correct
+import { scaleFont } from '@/components/utils/ResponsiveFont';
 
 // Define the Address interface
 interface Address {
@@ -57,13 +55,34 @@ const AddressSelectorScreen: React.FC = () => {
     const [region, setRegion] = useState<Region>({
         latitude: 37.7749,
         longitude: -122.4194,
-        latitudeDelta: 0.01, // Increased delta for better zoom control
+        latitudeDelta: 0.01,
         longitudeDelta: 0.01,
     });
 
+    // New state for reverse geocoding loading
+    const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false);
+
     // Retrieve screen dimensions
     const { height, width } = Dimensions.get('window');
-    const mapHeight = activateAddressDetails ? height * 0.3 : height * 0.8;
+
+    // Initialize Animated Value
+    const [mapAnimation] = useState(new Animated.Value(0));
+
+    // Define animatedMapHeight using interpolation
+    const animatedMapHeight = mapAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [height * 0.8, height * 0.3],
+    });
+
+    // Animate when activateAddressDetails changes
+    useEffect(() => {
+        Animated.timing(mapAnimation, {
+            toValue: activateAddressDetails ? 1 : 0,
+            duration: 300, // Adjust duration for smoother transition
+            easing: Easing.bezier(0.25, 0.1, 0.25, 1), // Custom easing for smooth animation
+            useNativeDriver: false,
+        }).start();
+    }, [activateAddressDetails]); // triggers when activateAddressDetails changes
 
     // Function to handle fetching location and reverse geocoding
     const fetchLocation = async () => {
@@ -94,7 +113,7 @@ const AddressSelectorScreen: React.FC = () => {
             const newRegion: Region = {
                 latitude,
                 longitude,
-                latitudeDelta: 0.01, // Adjusted for better zoom
+                latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
             };
 
@@ -153,17 +172,13 @@ const AddressSelectorScreen: React.FC = () => {
      * @param shouldReset Determines whether to reset activateAddressDetails
      */
     const handleAddressUpdate = async (latitude: number, longitude: number, shouldReset: boolean = true) => {
-        // if (shouldReset) {
-        //     setActivateAddressDetails(false);
-        // }
-        // console.log('activateAddressDetails:', activateAddressDetails);
-
         try {
+            setIsReverseGeocoding(true); // Start loading
             const [addressData] = await Location.reverseGeocodeAsync({ latitude, longitude });
             if (addressData) {
                 setAddress({
                     street: addressData.street || '',
-                    neighborhood: addressData.subregion || '', // Adjust based on available data
+                    neighborhood: addressData.subregion || '',
                     district: addressData.city || '',
                     province: addressData.region || '',
                     country: addressData.country || '',
@@ -176,6 +191,8 @@ const AddressSelectorScreen: React.FC = () => {
         } catch (error) {
             console.error('Error fetching address:', error);
             Alert.alert('Error', 'An error occurred while fetching the address.');
+        } finally {
+            setIsReverseGeocoding(false); // End loading
         }
     };
 
@@ -208,16 +225,16 @@ const AddressSelectorScreen: React.FC = () => {
 
     const toggleAddressDetails = () => {
         setActivateAddressDetails(prevState => !prevState);
-        console.log(activateAddressDetails)
     };
 
     const mapOntouchEvent = () => {
-        setIsMapInteracted(true)
-        setActivateAddressDetails(false)
-    }
+        setIsMapInteracted(true);
+        setActivateAddressDetails(false);
+    };
+
     return (
         <View style={styles.container}>
-            <View style={[styles.mapContainer, { height: mapHeight, width: width }]}>
+            <Animated.View style={[styles.mapContainer, { height: animatedMapHeight, width: width }]}>
                 <MapView
                     ref={mapRef}
                     style={styles.map}
@@ -234,10 +251,8 @@ const AddressSelectorScreen: React.FC = () => {
                     showsUserLocation={true}
                     followsUserLocation={false}
                 />
-
-                {/* Fixed Center Marker with Custom Image */}
                 <View style={styles.centerMarker}>
-                    <Image source={customMarker} style={styles.customMarkerImage} />
+                    <MaterialIcons name="place" size={48} color="#FF0000" />
                 </View>
 
                 <TouchableOpacity
@@ -248,12 +263,12 @@ const AddressSelectorScreen: React.FC = () => {
                     disabled={locationLoading}
                 >
                     {locationLoading ? (
-                        <ActivityIndicator size="small" color="#fff" />
+                        <ActivityIndicator size="small" color="#0000ff" />
                     ) : (
                         <MaterialIcons name="my-location" size={24} color="#fff" />
                     )}
                 </TouchableOpacity>
-            </View>
+            </Animated.View>
 
             <KeyboardAvoidingView
                 style={styles.formWrapper}
@@ -263,9 +278,17 @@ const AddressSelectorScreen: React.FC = () => {
                 {!activateAddressDetails && (
                     <>
                         <Text style={styles.title}>Select or Enter Your Address</Text>
-                        <View style={styles.addressPreview}>
-                            <Text>{`${address.street}, ${address.district}, ${address.postalCode}`}</Text>
-                            <Text style={styles.addressSubText}>{`${address.province}, ${address.country}`}</Text>
+                        <View style={styles.addressPreviewContainer}>
+                            <View style={styles.addressPreview}>
+                                <Text>{`${address.street}, ${address.district} ${address.postalCode}`}</Text>
+                                <Text style={styles.addressSubText}>{`${address.province}, ${address.country}`}</Text>
+                            </View>
+                            {isReverseGeocoding && (
+                                <View style={styles.addressLoadingOverlay}>
+                                    <ActivityIndicator size="small" color="#0000ff" />
+                                    <Text style={styles.loadingText}>Fetching address...</Text>
+                                </View>
+                            )}
                         </View>
                     </>
                 )}
@@ -327,7 +350,8 @@ const AddressSelectorScreen: React.FC = () => {
                     </View>
                 )}
             </KeyboardAvoidingView>
-        </View>)
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
@@ -349,13 +373,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: '50%',
         left: '50%',
-        marginLeft: -24, // Half of the custom marker image width (48/2)
-        marginTop: -48,  // Half of the custom marker image height (96/2) Adjust if needed
-    },
-    customMarkerImage: {
-        width: 48,
-        height: 48,
-        resizeMode: 'contain',
+        marginLeft: scaleFont(-23.5), // Half of the icon width (48/2)
+        marginTop: scaleFont(-13), // Adjusted to center the marker vertically
     },
     myLocationButton: {
         position: 'absolute',
@@ -383,15 +402,34 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         textAlign: 'center',
     },
-    addressPreview: {
-        alignItems: 'flex-start',
-        marginLeft: 80,
+    addressPreviewContainer: {
+        position: 'relative',
+        marginLeft: 80, // Adjust based on marker icon size to avoid overlapping
         marginBottom: 16,
+    },
+    addressPreview: {
+        // Optionally, you can add padding or styling here
     },
     addressSubText: {
         color: 'gray',
         fontWeight: '300',
         fontSize: 12,
+    },
+    addressLoadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+    },
+    loadingText: {
+        marginTop: 5,
+        fontSize: 14,
+        color: '#000',
     },
     formContainer: {
         width: '100%',
@@ -417,6 +455,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff',
+    },
+    reverseGeocodingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 
