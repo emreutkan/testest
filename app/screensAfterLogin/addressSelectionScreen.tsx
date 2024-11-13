@@ -68,21 +68,26 @@ const AddressSelectorScreen: React.FC = () => {
     // Initialize Animated Value
     const [mapAnimation] = useState(new Animated.Value(0));
 
-    // Define animatedMapHeight using interpolation
-    const animatedMapHeight = mapAnimation.interpolate({
+// Existing interpolation for the map's translateY
+    const animatedMapTranslateY = mapAnimation.interpolate({
         inputRange: [0, 1],
-        outputRange: [height * 0.8, height * 0.3],
+        outputRange: [0, -height * 0.45], // Adjust as needed
     });
 
+// New interpolation for the formWrapper's translateY
+    const animatedFormTranslateY = mapAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, -height * 0.45], // The same value to sync movement
+    });
     // Animate when activateAddressDetails changes
     useEffect(() => {
         Animated.timing(mapAnimation, {
             toValue: activateAddressDetails ? 1 : 0,
-            duration: 300, // Adjust duration for smoother transition
-            easing: Easing.bezier(0.25, 0.1, 0.25, 1), // Custom easing for smooth animation
-            useNativeDriver: false,
+            duration: 300,
+            easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+            useNativeDriver: true,
         }).start();
-    }, [activateAddressDetails]); // triggers when activateAddressDetails changes
+    }, [activateAddressDetails]);
 
     // Function to handle fetching location and reverse geocoding
     const fetchLocation = async () => {
@@ -214,14 +219,7 @@ const AddressSelectorScreen: React.FC = () => {
         };
     }, []);
 
-    if (initialLoading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0000ff" />
-                <Text>Loading...</Text>
-            </View>
-        );
-    }
+
 
     const toggleAddressDetails = () => {
         setActivateAddressDetails(prevState => !prevState);
@@ -232,9 +230,157 @@ const AddressSelectorScreen: React.FC = () => {
         setActivateAddressDetails(false);
     };
 
+    const styles = StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: '#f5f5f5',
+        },
+        mapContainer: {
+            // position: 'relative',
+            borderBottomLeftRadius: 20,
+            height: height * 0.75, // this pushes the formwrapper further down dont change it
+            borderWidth: 12,
+            borderBottomRightRadius: 20,
+            overflow: 'hidden',
+            backgroundColor: '#000',
+        },
+        formWrapper: {
+            borderWidth: 12,
+            marginBottom: scaleFont(50),
+            flex: 1,
+            // paddingHorizontal: 16,
+            // paddingTop: 16,
+        },
+        map: {
+            ...StyleSheet.absoluteFillObject,
+        },
+        centerMarker: {
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            marginLeft: scaleFont(-23.5),
+            marginTop: scaleFont(-13),
+        },
+        myLocationButton: {
+            position: 'absolute',
+            bottom: 15,
+            right: 15,
+            backgroundColor: '#000',
+            padding: 12,
+            borderRadius: 30,
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 2,
+            elevation: 5,
+        },
+
+        title: {
+            fontSize: 20,
+            fontWeight: 'bold',
+            // marginBottom: 12,
+            textAlign: 'center',
+        },
+        addressPreviewContainer: {
+            marginHorizontal: scaleFont(20),
+            position: 'relative',
+            // marginBottom: 16,
+            flex: 1, // Take available space
+            // marginRight: 8, // Add some margin to separate from the loading overlay or button
+            flexDirection: 'row', // Arrange children in a row
+            alignItems: 'center', // Vertically center the items
+            justifyContent: 'space-between', // Optional: Adjust spacing between items if needed
+        },
+        addressPreview: {
+        },
+        addressSubText: {
+            color: 'gray',
+            fontWeight: '300',
+            fontSize: 12,
+        },
+        addressLoadingOverlay: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 255, 255, 0.6)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 8,
+            marginLeft: 8, // Space between address preview and loading overlay
+        },
+        loadingText: {
+            marginTop: 5,
+            fontSize: 14,
+            color: '#000',
+        },
+        formContainer: {
+            width: '100%',
+            backgroundColor: '#fff',
+            // padding: 16,
+            borderRadius: 8,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+        },
+        input: {
+            borderColor: '#ccc',
+            borderWidth: 1,
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 12,
+            fontSize: 16,
+        },
+        loadingContainer: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: '#fff',
+        },
+        reverseGeocodingOverlay: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            justifyContent: 'center',
+            alignItems: 'center',
+        }, loginButton: {
+            // flex: 2/3,
+            width: '35%',
+            borderWidth: 1,
+            marginLeft: scaleFont(8)
+        }
+
+    });
+
+    if (initialLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#0000ff" />
+                <Text>Loading...</Text>
+            </View>
+        );
+    }
+
+
     return (
         <View style={styles.container}>
-            <Animated.View style={[styles.mapContainer, { height: animatedMapHeight, width: width }]}>
+            <Animated.View
+                style={[
+                    styles.mapContainer,
+                    {
+                        width: width,
+                        transform: [{ translateY: animatedMapTranslateY }],
+                    },
+                ]}
+            >
                 <MapView
                     ref={mapRef}
                     style={styles.map}
@@ -289,13 +435,26 @@ const AddressSelectorScreen: React.FC = () => {
                                     <Text style={styles.loadingText}>Fetching address...</Text>
                                 </View>
                             )}
+                            <View style={styles.loginButton}>
+                                <LoginButton
+                                    onPress={toggleAddressDetails}
+                                    title={'Select'}/>
+
+                            </View>
                         </View>
+
                     </>
                 )}
-                <LoginButton onPress={toggleAddressDetails} />
 
                 {activateAddressDetails && (
-                    <View style={styles.formContainer}>
+                    <Animated.View
+                        style={[
+                            styles.formWrapper,
+                            {
+                                transform: [{ translateY: animatedFormTranslateY }],
+                            },
+                        ]}
+                    >
                         <TextInput
                             style={styles.input}
                             placeholder="Street"
@@ -347,125 +506,13 @@ const AddressSelectorScreen: React.FC = () => {
                             returnKeyType="done"
                         />
                         <Button title="Confirm Address" onPress={handleAddressConfirm} />
-                    </View>
+                    </Animated.View>
                 )}
             </KeyboardAvoidingView>
         </View>
     );
+
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    mapContainer: {
-        position: 'relative',
-        borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 20,
-        overflow: 'hidden',
-        backgroundColor: '#000',
-    },
-    map: {
-        ...StyleSheet.absoluteFillObject,
-    },
-    centerMarker: {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        marginLeft: scaleFont(-23.5), // Half of the icon width (48/2)
-        marginTop: scaleFont(-13), // Adjusted to center the marker vertically
-    },
-    myLocationButton: {
-        position: 'absolute',
-        bottom: 15,
-        right: 15,
-        backgroundColor: '#000',
-        padding: 12,
-        borderRadius: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 2,
-        elevation: 5,
-    },
-    formWrapper: {
-        flex: 1,
-        paddingHorizontal: 16,
-        paddingTop: 16,
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 12,
-        textAlign: 'center',
-    },
-    addressPreviewContainer: {
-        position: 'relative',
-        marginLeft: 80, // Adjust based on marker icon size to avoid overlapping
-        marginBottom: 16,
-    },
-    addressPreview: {
-        // Optionally, you can add padding or styling here
-    },
-    addressSubText: {
-        color: 'gray',
-        fontWeight: '300',
-        fontSize: 12,
-    },
-    addressLoadingOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 8,
-    },
-    loadingText: {
-        marginTop: 5,
-        fontSize: 14,
-        color: '#000',
-    },
-    formContainer: {
-        width: '100%',
-        backgroundColor: '#fff',
-        padding: 16,
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    input: {
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 12,
-        fontSize: 16,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-    },
-    reverseGeocodingOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-});
 
 export default AddressSelectorScreen;
