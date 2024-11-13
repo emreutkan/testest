@@ -71,13 +71,13 @@ const AddressSelectorScreen: React.FC = () => {
 // Existing interpolation for the map's translateY
     const animatedMapTranslateY = mapAnimation.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, -height * 0.45], // Adjust as needed
+        outputRange: [0, -height * 0.55], // Adjust as needed
     });
 
 // New interpolation for the formWrapper's translateY
     const animatedFormTranslateY = mapAnimation.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, -height * 0.45], // The same value to sync movement
+        outputRange: [0, -height * 0.55], // The same value to sync movement
     });
     // Animate when activateAddressDetails changes
     useEffect(() => {
@@ -233,23 +233,30 @@ const AddressSelectorScreen: React.FC = () => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: '#f5f5f5',
+            backgroundColor: 'blue,'
         },
         mapContainer: {
             // position: 'relative',
             borderBottomLeftRadius: 20,
-            height: height * 0.75, // this pushes the formwrapper further down dont change it
-            borderWidth: 12,
+            height: height * 0.805, // this pushes the formwrapper further down dont change it
+            borderWidth: 0,
             borderBottomRightRadius: 20,
             overflow: 'hidden',
             backgroundColor: '#000',
         },
         formWrapper: {
-            borderWidth: 12,
-            marginBottom: scaleFont(50),
+            // borderWidth: 11,
+            backgroundColor: "#123123",
             flex: 1,
             // paddingHorizontal: 16,
             // paddingTop: 16,
+        },
+        belowMap: {
+            // borderWidth: 11,
+            backgroundColor: "#000000",
+            flex: 1,
+            // paddingHorizontal: 16,
+            paddingBottom: scaleFont(50),
         },
         map: {
             ...StyleSheet.absoluteFillObject,
@@ -293,7 +300,8 @@ const AddressSelectorScreen: React.FC = () => {
             alignItems: 'center', // Vertically center the items
             justifyContent: 'space-between', // Optional: Adjust spacing between items if needed
         },
-        addressPreview: {
+        addressText: {
+            color: 'white',
         },
         addressSubText: {
             color: 'gray',
@@ -306,7 +314,7 @@ const AddressSelectorScreen: React.FC = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(255, 255, 255, 0.6)',
+            // backgroundColor: 'rgba(255, 255, 255, 0.6)',
             justifyContent: 'center',
             alignItems: 'center',
             borderRadius: 8,
@@ -316,17 +324,6 @@ const AddressSelectorScreen: React.FC = () => {
             marginTop: 5,
             fontSize: 14,
             color: '#000',
-        },
-        formContainer: {
-            width: '100%',
-            backgroundColor: '#fff',
-            // padding: 16,
-            borderRadius: 8,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
         },
         input: {
             borderColor: '#ccc',
@@ -422,11 +419,10 @@ const AddressSelectorScreen: React.FC = () => {
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
             >
                 {!activateAddressDetails && (
-                    <>
-                        <Text style={styles.title}>Select or Enter Your Address</Text>
+                    <View style={styles.belowMap}>
                         <View style={styles.addressPreviewContainer}>
                             <View style={styles.addressPreview}>
-                                <Text>{`${address.street}, ${address.district} ${address.postalCode}`}</Text>
+                                <Text style={styles.addressText}>{`${address.street}, ${address.district} ${address.postalCode}`}</Text>
                                 <Text style={styles.addressSubText}>{`${address.province}, ${address.country}`}</Text>
                             </View>
                             {isReverseGeocoding && (
@@ -443,7 +439,7 @@ const AddressSelectorScreen: React.FC = () => {
                             </View>
                         </View>
 
-                    </>
+                    </View>
                 )}
 
                 {activateAddressDetails && (
