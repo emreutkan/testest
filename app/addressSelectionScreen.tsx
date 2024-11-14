@@ -230,10 +230,11 @@ const AddressSelectorScreen: React.FC = () => {
         setActivateAddressDetails(false);
     };
 
+
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: 'blue,'
+            // backgroundColor: 'blue,'
         },
         mapContainer: {
             // position: 'relative',
@@ -246,7 +247,7 @@ const AddressSelectorScreen: React.FC = () => {
         },
         formWrapper: {
             // borderWidth: 11,
-            backgroundColor: "#123123",
+            backgroundColor: "#ffffff",
             flex: 1,
             // paddingHorizontal: 16,
             // paddingTop: 16,
@@ -376,8 +377,8 @@ const AddressSelectorScreen: React.FC = () => {
                         width: width,
                         transform: [{ translateY: animatedMapTranslateY }],
                     },
-                ]}
-            >
+                ]}>
+
                 <MapView
                     ref={mapRef}
                     style={styles.map}
@@ -412,7 +413,6 @@ const AddressSelectorScreen: React.FC = () => {
                     )}
                 </TouchableOpacity>
             </Animated.View>
-
             <KeyboardAvoidingView
                 style={styles.formWrapper}
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
