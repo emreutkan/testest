@@ -8,8 +8,10 @@ const Index = () => {
     const navigateToLogin = async () => {
       // Small delay to allow mounting
       await new Promise(resolve => setTimeout(resolve, 100));
+      router.push('/screens/LoginPage');
+
       // router.push('/screensAfterLogin/afterlogin');
-      router.push('/accountscreen/demo');
+      // router.push('/accountscreen/demo');
 
     };
 

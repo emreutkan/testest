@@ -1,12 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '@/app/store'; // Adjust the path to your store type
-import Header from "@/components/afterloginComponents/Header";
 import { useRouter } from 'expo-router';
 
 const AfterLoginScreen = () => {
-    const dispatch = useDispatch();
     const router = useRouter();
     const addresses = useSelector((state: RootState) => state.user.addresses);
 

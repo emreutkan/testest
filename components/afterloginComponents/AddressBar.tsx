@@ -80,7 +80,7 @@ const AddressBar: React.FC = () => {
                                     </TouchableOpacity>
                                 )}
                             />
-                            <TouchableOpacity onPress={switchToAddAddress} style={styles.addAddressOption}>
+                            <TouchableOpacity onPress={switchToAddAddress}>
                                 <Text style={styles.addAddressOptionText}> + Add new address</Text>
                             </TouchableOpacity>
 

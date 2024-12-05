@@ -97,9 +97,6 @@ const userSlice = createSlice({
         removeFavorite: (state, action: PayloadAction<string>) => {
             state.favorites = state.favorites.filter(item => item !== action.payload);
         },
-        resetUser: (state) => {
-            return initialState;
-        },
     },
 });
 
@@ -114,7 +111,6 @@ export const {
     clearCart,
     addFavorite,
     removeFavorite,
-    resetUser,
 } = userSlice.actions;
 
 export default userSlice.reducer;

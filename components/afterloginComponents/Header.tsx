@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { scaleFont } from "@/components/utils/ResponsiveFont";
 import AddressBar from "@/components/afterloginComponents/AddressBar";
 // import NotificationIcon from "@/components/afterloginComponents/NotificationIcon";

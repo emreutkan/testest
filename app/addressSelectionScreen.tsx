@@ -15,7 +15,6 @@ import {
 } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { addAddress, setCurrentAddress } from '@/slices/userSlice';
-import { useNavigation } from '@react-navigation/native';
 import MapView, { Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -108,8 +107,8 @@ const AddressSelectorScreen: React.FC = () => {
 
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Highest,
-                maximumAge: 10000,
-                timeout: 5000,
+                // maximumAge: 10000,
+                // timeout: 5000,
             });
 
             const { latitude, longitude } = location.coords;
@@ -124,7 +123,7 @@ const AddressSelectorScreen: React.FC = () => {
             setRegion(newRegion);
             mapRef.current?.animateToRegion(newRegion, 1000);
 
-            await handleAddressUpdate(latitude, longitude, true); // Reset is desired on initial fetch
+            await handleAddressUpdate(latitude, longitude); // Reset is desired on initial fetch
 
             setInitialLoading(false);
             setLocationLoading(false);
@@ -154,7 +153,7 @@ const AddressSelectorScreen: React.FC = () => {
     };
 
     const handleAddressConfirm = () => {
-        const { street, district, province, country, postalCode, apartmentNo } = address;
+        const { street, district, country } = address;
 
         // Validate required fields; adjust as necessary
         if (street.trim() === '' || district.trim() === '' || country.trim() === '') {
@@ -173,9 +172,8 @@ const AddressSelectorScreen: React.FC = () => {
      * Updated handleAddressUpdate function to handle both map press and drag end
      * @param latitude
      * @param longitude
-     * @param shouldReset Determines whether to reset activateAddressDetails
      */
-    const handleAddressUpdate = async (latitude: number, longitude: number, shouldReset: boolean = true) => {
+    const handleAddressUpdate = async (latitude: number, longitude: number, ) => {
         try {
             setIsReverseGeocoding(true); // Start loading
             const [addressData] = await Location.reverseGeocodeAsync({ latitude, longitude });
@@ -205,7 +203,7 @@ const AddressSelectorScreen: React.FC = () => {
      */
     const debouncedHandleAddressUpdate = useRef(
         debounce(async (latitude: number, longitude: number) => {
-            await handleAddressUpdate(latitude, longitude, true); // Reset on map interaction
+            await handleAddressUpdate(latitude, longitude); // Reset on map interaction
         }, 500) // 500ms delay
     ).current;
 
@@ -420,7 +418,7 @@ const AddressSelectorScreen: React.FC = () => {
                 {!activateAddressDetails && (
                     <View style={styles.belowMap}>
                         <View style={styles.addressPreviewContainer}>
-                            <View style={styles.addressPreview}>
+                            <View >
                                 <Text style={styles.addressText}>{`${address.street}, ${address.district} ${address.postalCode}`}</Text>
                                 <Text style={styles.addressSubText}>{`${address.province}, ${address.country}`}</Text>
                             </View>

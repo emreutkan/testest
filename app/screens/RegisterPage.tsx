@@ -11,7 +11,6 @@ import PasswordInputSingleton from '../../components/LoginScreenComponents/passw
 
 const RegisterScreen: React.FC = () => {
     const router = useRouter();
-    const user = UserModel.getInstance(); // Use the singleton instance here
     const passwordInputInstance = PasswordInputSingleton.getInstance();
     const PasswordInput = passwordInputInstance.getComponent();
 
@@ -73,7 +72,7 @@ const RegisterScreen: React.FC = () => {
                             <PasswordInput />
                         </View>
 
-                        <View style={styles.buttonArea}>
+                        <View>
                             <View style={styles.backButton}>
                                 <LoginButton
                                     onPress={() => router.back()}

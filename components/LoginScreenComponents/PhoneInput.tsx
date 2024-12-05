@@ -14,7 +14,7 @@ const PhoneInput = () => {
     const [tempCode, setTempCode] = useState(user.getSelectedCode());
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState(user.getPhoneNumber() || '');
-    const [isTyping, setIsTyping] = useState(user.getPhoneNumber() ? true : false);
+    const [isTyping, setIsTyping] = useState(!!user.getPhoneNumber());
     const passwordInputInstance = PasswordInputSingleton.getInstance();
 
     const handleChangeText = (text: string) => {
@@ -29,8 +29,6 @@ const PhoneInput = () => {
         }
         else {
             setIsTyping(true)
-            console.log(user.getPassword() + 'password from phone input handlechangetext')
-
             user.getPhoneNumber().length == 0 && user.getEmail().length == 0 ? passwordInputInstance.setVisible(false) : passwordInputInstance.setVisible(true);
 
         }
@@ -44,7 +42,7 @@ const PhoneInput = () => {
         /*
         * removed this line to allow this scenario to happen:
         *
-        * user tries to login with phone number and enters the password then decides to login with email (or phone) instead
+        * user tries to log in with phone number and enters the password then decides to log in with email (or phone) instead
         *
         * and goes on with clicking X button to clear phone number then clicks login with email (or phone) button after that
         *
