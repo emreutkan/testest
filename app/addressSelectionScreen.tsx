@@ -36,7 +36,6 @@ interface Address {
 
 const AddressSelectorScreen: React.FC = () => {
     const dispatch = useDispatch();
-    const navigation = useNavigation();
     const mapRef = useRef<MapView>(null);
     const [isMapInteracted, setIsMapInteracted] = useState<boolean>(false);
     const [initialLoading, setInitialLoading] = useState<boolean>(true);
@@ -167,7 +166,7 @@ const AddressSelectorScreen: React.FC = () => {
         dispatch(setCurrentAddress(address));
 
         Alert.alert('Success', 'Address has been set!');
-        navigation.goBack();
+        // navigation.goBack();
     };
 
     /**
